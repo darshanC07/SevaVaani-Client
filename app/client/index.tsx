@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   searchBar: {
-    width: "90%",
+    width: "85%",
     height: 45,
     borderColor: "black",
     borderWidth: 1,

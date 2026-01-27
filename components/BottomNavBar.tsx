@@ -1,7 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 import React from "react";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
 const BottomNavBar = () => {
+  const router = useRouter();
   return (
     <View style={styles.bg}>
       <View>
@@ -37,12 +39,12 @@ const BottomNavBar = () => {
           style={styles.icon}
         />
       </View>
-      <View>
+      <TouchableOpacity onPress={()=>router.navigate('/client/Profile')} >
         <Image
           source={require("../assets/BottomNavBar/user.png")}
           style={styles.icon}
         />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

@@ -1,7 +1,11 @@
-import { Image, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform } from "react-native";
+import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import AIChatOverlay from "./AIChatOverlay";
 
 const BottomNavBar = () => {
+  const router = useRouter();
+  const [showOverlay, setShowOverlay] = useState(false);
   return (
     <View style={styles.bg}>
       <View>
@@ -9,39 +13,58 @@ const BottomNavBar = () => {
           source={require("../assets/BottomNavBar/Home.png")}
           style={styles.icon}
         />
+        <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Home</Text>
       </View>
       <View>
         <Image
           source={require("../assets/BottomNavBar/Business.png")}
           style={styles.icon}
         />
+        <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Request</Text>
       </View>
-      <View style={{
-        position : 'relative',
-        bottom : 20,
-        backgroundColor: "#4560F4",
-        borderRadius : '50%',
-        width : 70,
-        height : 70,
-        justifyContent : 'center',
-        alignItems : 'center'
-      }}>
+      <TouchableOpacity 
+        style={{
+          position: 'relative',
+          bottom: 20,
+          backgroundColor: "#4560F4",
+          borderRadius: 35,
+          borderColor: 'white', 
+          borderWidth: 1,
+          width: 70,
+          height: 70,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+        onPress={() => setShowOverlay(true)}
+      >
         <Image
           source={require("../assets/BottomNavBar/Microphone.png")}
           style={[styles.icon, { width: 42, height: 42 }]}
         />
-      </View>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showOverlay}
+        onRequestClose={() => setShowOverlay(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <AIChatOverlay onClose={() => setShowOverlay(false)} />
+        </View>
+      </Modal>
       <View>
         <Image
           source={require("../assets/BottomNavBar/chat.png")}
           style={styles.icon}
         />
+        <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Chat</Text>
       </View>
       <View>
         <Image
           source={require("../assets/BottomNavBar/user.png")}
           style={styles.icon}
-        />
+        /><Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Profile</Text>
       </View>
     </View>
   );
@@ -63,5 +86,11 @@ const styles = StyleSheet.create({
   icon: {
     height: 30,
     width: 30,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });

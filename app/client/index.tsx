@@ -1,6 +1,6 @@
 import BottomNavBar from "@/components/BottomNavBar";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Image,
   ScrollView,
@@ -12,7 +12,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import Immersive from 'react-native-immersive';
 import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
 const Index = () => {
@@ -26,13 +25,13 @@ const Index = () => {
   let { height } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ?? 24);
 
-  useEffect(() => {
-    Immersive.on();
+  // useEffect(() => {
+  //   Immersive.on();
 
-    return () => {
-      Immersive.off();
-    };
-  }, []);
+  //   return () => {
+  //     Immersive.off();
+  //   };
+  // }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>

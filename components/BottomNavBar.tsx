@@ -60,12 +60,13 @@ const BottomNavBar = () => {
         />
         <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Chat</Text>
       </View>
-      <View>
+      <TouchableOpacity onPress={()=>router.push('/client/Profile' as any)} >
         <Image
           source={require("../assets/BottomNavBar/user.png")}
           style={styles.icon}
         /><Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Profile</Text>
-      </View>
+        </TouchableOpacity>
+      
     </View>
   );
 };

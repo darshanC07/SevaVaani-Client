@@ -48,7 +48,6 @@ const Notifications = () => {
         justifyContent: "space-between",
       }}
     >
-      {/* Header Background */}
       <View
         style={{
           backgroundColor: "#4560F4",
@@ -68,8 +67,6 @@ const Notifications = () => {
           alignSelf: "center",
         }}
       />
-
-      {/* Main Container */}
       <View
         style={{
           backgroundColor: "white",

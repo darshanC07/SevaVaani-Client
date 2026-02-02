@@ -11,13 +11,13 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         </TouchableOpacity>
       </View>
       <View style={styles.OverlayContainer}>
-        <View style={styles.blueSection}>
+        
           <ScrollView 
             style={styles.messagesContainer}
             contentContainerStyle={styles.messagesContent}
           >
           </ScrollView>
-        </View>
+        
       </View>
     </View>
   );
@@ -56,17 +56,14 @@ const styles = StyleSheet.create({
   },
   OverlayContainer: {
     flex: 1,
-    backgroundColor: 'white',
-    padding: 10,
-  },
-  blueSection: {
-    flex: 1,
     backgroundColor: '#4560F4',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'white',
     overflow: 'hidden',
+    padding: 10,
   },
+ 
   messagesContainer: {
     flex: 1,
     backgroundColor: 'transparent',

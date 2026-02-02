@@ -1,6 +1,6 @@
 import BottomNavBar from "@/components/BottomNavBar";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Image,
   ScrollView,
@@ -12,7 +12,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import Immersive from 'react-native-immersive';
 import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
 const Index = () => {
@@ -26,13 +25,13 @@ const Index = () => {
   let { height } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ?? 24);
 
-  useEffect(() => {
-    Immersive.on();
+  // useEffect(() => {
+  //   Immersive.on();
 
-    return () => {
-      Immersive.off();
-    };
-  }, []);
+  //   return () => {
+  //     Immersive.off();
+  //   };
+  // }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -89,11 +88,12 @@ const Index = () => {
               </View>
 
               <View style={styles.bottomCardsRow}>
-                <View style={styles.actionCard}>
-                  <Image source={addIcon} style={styles.addIcon} />
-                  <Text style={styles.actionText}>Post a New Job</Text>
-                </View>
-
+                <TouchableOpacity onPress={() => router.push("/client/PostNewJob")}>
+                  <View style={styles.actionCard}>
+                    <Image source={addIcon} style={styles.addIcon} />
+                    <Text style={styles.actionText}>Post a New Job</Text>
+                  </View>
+                </TouchableOpacity>
                 <View style={styles.completedCard}>
                   <Text style={styles.cardNumber}>9</Text>
                   <Text style={styles.cardTitle}>Completed Jobs</Text>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   rightColumn: {
-    width: "55%",
+    width: "53%",
     gap: 5,
   },
   cardLarge: {

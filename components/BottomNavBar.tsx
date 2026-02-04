@@ -9,11 +9,13 @@ const BottomNavBar = () => {
   return (
     <View style={styles.bg}>
       <View>
+        <TouchableOpacity onPress={()=>router.push('/client')} > 
         <Image
           source={require("../assets/BottomNavBar/Home.png")}
           style={styles.icon}
         />
         <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Home</Text>
+        </TouchableOpacity>
       </View>
       <View>
         <Image

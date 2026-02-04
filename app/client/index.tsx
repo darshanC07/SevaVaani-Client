@@ -271,7 +271,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: "black",
     borderWidth: 1,
-    width: "49%",
+    width: 90,
+    height: "100%",
   },
   completedCard: {
     justifyContent: "center",

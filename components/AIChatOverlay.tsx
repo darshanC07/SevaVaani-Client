@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     overflow: 'hidden',
     padding: 10,
+    margin: 10,
   },
  
   messagesContainer: {

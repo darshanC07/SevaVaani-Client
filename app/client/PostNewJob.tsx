@@ -69,12 +69,15 @@ const PostNewJob = () => {
                   style={[
                     styles.serviceInputWrap,
                     isServiceOpen && styles.fieldInputWrapOpen,
+                    
                   ]}
                 >
                   <TextInput
                     style={styles.serviceInput}
                     value={serviceText}
                     onChangeText={setServiceText}
+                    placeholder="Enter service type"
+                    placeholderTextColor="grey"
                     onFocus={() => setIsServiceOpen(true)}
                   />
                 </View>
@@ -118,6 +121,8 @@ const PostNewJob = () => {
                   <TextInput
                     style={styles.jobInput}
                     onFocus={() => setIsServiceOpen(false)}
+                    placeholder="Enter job details"
+                    placeholderTextColor="grey"
                   />
                 </View>
               </View>
@@ -128,6 +133,8 @@ const PostNewJob = () => {
                   <TextInput
                     style={styles.locationInput}
                     onFocus={() => setIsServiceOpen(false)}
+                    placeholder="Enter job location"
+                    placeholderTextColor="grey"
                   />
                 </View>
               </View>
@@ -139,6 +146,8 @@ const PostNewJob = () => {
                     <TextInput
                       style={styles.budgetMinInput}
                       keyboardType="number-pad"
+                      placeholder="0.rs"
+                      placeholderTextColor="grey"
                       onFocus={() => setIsServiceOpen(false)}
                     />
                   </View>
@@ -147,6 +156,8 @@ const PostNewJob = () => {
                     <TextInput
                       style={styles.budgetMaxInput}
                       keyboardType="number-pad"
+                      placeholder="0.rs"
+                      placeholderTextColor="grey"
                       onFocus={() => setIsServiceOpen(false)}
                     />
                   </View>
@@ -161,6 +172,8 @@ const PostNewJob = () => {
                       style={styles.durationInput}
                       keyboardType="number-pad"
                       value={durationHours}
+                      placeholder="0"
+                      placeholderTextColor="grey"
                       onChangeText={(text) =>
                         setDurationHours(text.replace(/[^0-9]/g, ""))
                       }
@@ -178,6 +191,8 @@ const PostNewJob = () => {
                     style={styles.descriptionInput}
                     multiline
                     textAlignVertical="top"
+                    placeholder="Enter job description"
+                    placeholderTextColor="grey"
                     onFocus={() => setIsServiceOpen(false)}
                   />
                 </View>

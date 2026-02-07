@@ -99,6 +99,7 @@ export default function Index() {
 
   // return <Redirect href="/registration/EmailScreen" />;
   return <Redirect href="/client/WorkerRankingScreen" />;
+  // return <Redirect href="/client/" />;
   // return <Redirect href="/client/JobRequest" />;
   // return <Redirect href="/client/CommunicationRoom" />;
   // return <Redirect href="/call/CallingScreen" />;

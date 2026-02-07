@@ -50,7 +50,7 @@ const WorkerRankBar = ({ data, id }) => {
             <TouchableOpacity onPress={async () => {
                 // const userId = getUserId();
                 const userId = "0qD34d7S4FaD6afL6cVN3nOE9zJ2";
-                const clientName = "Darshan"
+                const clientName = "Dayanand"
                 const workerId = data[0];
                 const response = await callUser(userId, clientName, workerId);
                 console.log("Call User Response:", response);

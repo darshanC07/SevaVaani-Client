@@ -1,8 +1,10 @@
+import { Platform } from "react-native";
 import * as Location from "expo-location";
 import { Stack } from "expo-router";
-import { Platform } from "react-native";
+
 import "../tasks/LocationTask";
 const LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
+
 
 
 // this is for background location update in db
@@ -34,8 +36,8 @@ export const startBackgroundLocation = async () => {
   console.log("Starting background location tracking...");
 
   await Location.startLocationUpdatesAsync(LOCATION_TASK, {
-    accuracy: Location.Accuracy.High,
-    timeInterval: 15000,
+    accuracy: Location.Accuracy.Balanced,
+    timeInterval: 120000,
     distanceInterval: 10,
     pausesUpdatesAutomatically: false,
     activityType:
@@ -63,20 +65,26 @@ const stopBackgroundLocation = async () => {
 
 
 export default function Layout() {
-  return (
-    <Stack>
-      <Stack.Screen name="OnBoarding1" options={{ headerShown: false }} />
-      <Stack.Screen name="OnBoarding2" options={{ headerShown: false }} />
-      <Stack.Screen name="OnBoarding3" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="registration"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="client"
-        options={{ headerShown: false }}
-      />
 
-    </Stack>
+
+  return (<Stack>
+    <Stack.Screen name="OnBoarding1" options={{ headerShown: false }} />
+    <Stack.Screen name="OnBoarding2" options={{ headerShown: false }} />
+    <Stack.Screen name="OnBoarding3" options={{ headerShown: false }} />
+    <Stack.Screen
+      name="registration"
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="client"
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="call"
+      options={{ headerShown: false }}
+    />
+
+  </Stack>
+
   );
 }

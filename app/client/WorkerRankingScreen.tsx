@@ -1,21 +1,26 @@
 import BottomNavBar from '@/components/BottomNavBar';
 import NavBar from '@/components/NavBar';
-import { fetchNearByWorkers } from '@/services/GlobalAPIs';
+import { callUser, fetchNearByWorkers } from '@/services/GlobalAPIs';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
-import { Image, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Image, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type MapContainerProps = {
     NearByWorkersLocList?: Array<[string, { lat: number; long: number }]>;
     UserLoc?: { lat: number; long: number };
 };
 
-const WorkerRankBar = ({ data }) => {
+async function getUserId() {
+    return await AsyncStorage.getItem("uid");
+}
+
+const WorkerRankBar = ({ data, id }) => {
     const [iconToggle, setIconToggle] = useState(false);
     const handlePress = () => {
         setIconToggle(true);
@@ -34,14 +39,32 @@ const WorkerRankBar = ({ data }) => {
             elevation: 4,
             borderRadius: 10
         }}>
-            <View><Text>{data.id}</Text></View>
+            <View><Text>{id + 1}</Text></View>
             <View>
-                <Text style={{ fontSize: 16, fontWeight: '600' }}>{data.name}</Text>
-                <Text style={{ fontSize: 14, color: 'grey' }}>{data.jobType}</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600' }}>{data[2] || "User"}</Text>
+                <Text style={{ fontSize: 14, color: 'grey' }}>{data[4] || "Worker"}</Text>
             </View>
             <View>
-                <Text style={{ fontSize: 16, fontWeight: '600' }}>Rating: {data.rating}</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600' }}>Rating: {data[3]}</Text>
             </View>
+            <TouchableOpacity onPress={async () => {
+                // const userId = getUserId();
+                const userId = "0qD34d7S4FaD6afL6cVN3nOE9zJ2";
+                const clientName = "Darshan"
+                const workerId = data[0];
+                const response = await callUser(userId, clientName, workerId);
+                console.log("Call User Response:", response);
+                if (response["code"] == -1) {
+                    Alert.alert('User offline', 'The recipient is offline, please try again after some time', [
+                        {
+                            text: 'OK',
+                            onPress: () => console.log('OK Pressed'),
+                        },
+                    ]);
+                }
+            }}>
+                <MaterialIcons name="call" size={24} color="green" />
+            </TouchableOpacity>
             <TouchableWithoutFeedback onPress={handlePress}>
                 {iconToggle ? (
                     <Ionicons name="chatbubbles-sharp" size={28} color="#1565C0" />
@@ -82,7 +105,7 @@ const MapContainer = ({
                     <Marker
                         key={index}
                         coordinate={{ latitude: worker[1]["lat"], longitude: worker[1]["long"] }}
-                        title={worker[0]}
+                        title={worker[2]}
                     />
                 )) : null}
 
@@ -183,13 +206,20 @@ const WorkerRankingScreen = () => {
         //     return;
         // }
         setMode('map');
-        const workersLoc = await fetchNearByWorkers("kXArdkSbtHhrAFVxMIsyR1lXeWF2");
-        // const workersLoc = await fetchNearByWorkers(user);
-        console.log("Nearby Workers Location Data:", workersLoc["nearby_workers"]);
-        setNearbyWorkersLoc(workersLoc["nearby_workers"]);
-        console.log("Client Location Data:", workersLoc["client_loc"]);
-        setClientLoc(workersLoc["client_loc"]);
+
     }
+
+    useEffect(() => {
+        const fetchWorkers = async () => {
+            const workersLoc = await fetchNearByWorkers("0qD34d7S4FaD6afL6cVN3nOE9zJ2");
+            // const workersLoc = await fetchNearByWorkers(user);
+            console.log("Nearby Workers Location Data:", workersLoc["nearby_workers"]);
+            setNearbyWorkersLoc(workersLoc["nearby_workers"]);
+            console.log("Client Location Data:", workersLoc["client_loc"]);
+            setClientLoc(workersLoc["client_loc"]);
+        };
+        fetchWorkers();
+    }, [])
 
 
     return (
@@ -254,7 +284,7 @@ const WorkerRankingScreen = () => {
                             {/* <FontAwesome name="list-ul" size={27} color="#605d5d" /> */}
                             <FontAwesome name="list-ul" size={22} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.options} onPress={handleMapOptionClick}>
+                        <TouchableOpacity style={styles.options} onPress={() => setMode('map')}>
                             {/* <FontAwesome6 name="map-location-dot" size={27} color="#605d5d" /> */}
                             <FontAwesome6 name="map-location-dot" size={22} color="white" />
                         </TouchableOpacity>
@@ -262,8 +292,11 @@ const WorkerRankingScreen = () => {
                     <View style={styles.contentContainer}>
                         {mode === 'list' ? (
                             <ScrollView style={{ marginTop: 0, width: '100%', height: '100%', padding: 10 }}>
-                                {data.map((item) => (
+                                {/* {data.map((item) => (
                                     <WorkerRankBar key={item.id} data={item} />
+                                ))} */}
+                                {nearByWorkersLoc.map((item, index) => (
+                                    <WorkerRankBar key={index} data={item} id={index} />
                                 ))}
                             </ScrollView>
                         ) : (mode === 'map' && clientLoc.lat !== 0 && clientLoc.long !== 0 ? <MapContainer NearByWorkersLocList={nearByWorkersLoc} UserLoc={clientLoc || { lat: 0, long: 0 }} /> : null)

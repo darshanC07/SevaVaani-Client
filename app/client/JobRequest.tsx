@@ -21,7 +21,7 @@ const JobRequest = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", height, justifyContent: 'space-between' }}>
       <View style={styles.headerBg} />
-   
+
       <NavBar />
       <View style={styles.horizontalLine} />
       <View style={styles.container}>
@@ -37,7 +37,7 @@ const JobRequest = () => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.workerName}>Kishor Kumar</Text>
-                <Text style={styles.rating}><AntDesign name="star" size={12} color="gold"  style={{alignSelf : 'center'}} /> 4.7 (150+ Jobs Completed)</Text>
+                <Text style={styles.rating}><AntDesign name="star" size={12} color="gold" style={{ alignSelf: 'center' }} /> 4.7 (150+ Jobs Completed)</Text>
                 <Text style={styles.exp}>Experience - 6 Years</Text>
               </View>
 

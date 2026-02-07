@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
+export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
 
 export const UpdateClientLoc = async (CLIENT_ID, latitude, longitude) => {
   try {
@@ -30,5 +30,53 @@ export const fetchNearByWorkers = async (CLIENT_ID) => {
     return response.data;
   } catch (err) {
     console.error("Failed to fetch nearby workers:", err);
+  }
+};
+
+export const callUser = async (CLIENT_ID, CLIENT_NAME, WORKER_ID) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/call_user`,
+      {
+        caller_uid: CLIENT_ID,
+        caller_name: CLIENT_NAME,
+        callee_uid: WORKER_ID,
+      },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to call worker:", err);
+  }
+};
+
+export const hangUpCall = async (CALLER_ID) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/hangup_call`,
+      { caller_uid: CALLER_ID },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to hang up call:", err);
+  }
+};
+
+export const joinCall = async (user1, user1_name, user2, user2_name) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/join_call`,
+      {
+        user1: user1,
+        user1_name: user1_name,
+        user2: user2,
+        user2_name: user2_name,
+      },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to join call:", err);
   }
 };

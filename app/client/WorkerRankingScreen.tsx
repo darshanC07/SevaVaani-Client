@@ -11,6 +11,8 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 type MapContainerProps = {
     NearByWorkersLocList?: Array<[string, { lat: number; long: number }]>;
     UserLoc?: { lat: number; long: number };
@@ -19,8 +21,7 @@ type MapContainerProps = {
 async function getUserId() {
     return await AsyncStorage.getItem("uid");
 }
-
-const WorkerRankBar = ({ data, id }) => {
+const WorkerRankBar = ({ data }) => {
     const [iconToggle, setIconToggle] = useState(false);
     const handlePress = () => {
         setIconToggle(true);

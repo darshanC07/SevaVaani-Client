@@ -38,6 +38,7 @@
           "apiKey": "AIzaSyDvSScst0iYdH7cs25OPhg8ZLaesfedxY8"
         }
       }
+      
     },
     "web": {
       "output": "static"

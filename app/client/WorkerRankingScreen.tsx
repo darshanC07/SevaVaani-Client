@@ -4,24 +4,22 @@ import { callUser, fetchNearByWorkers } from '@/services/GlobalAPIs';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Image, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { getUserId } from '@/utils/AsyncStorageUtils';
 
 type MapContainerProps = {
     NearByWorkersLocList?: Array<[string, { lat: number; long: number }]>;
     UserLoc?: { lat: number; long: number };
 };
 
-async function getUserId() {
-    return await AsyncStorage.getItem("uid");
-}
-const WorkerRankBar = ({ data }) => {
+
+const WorkerRankBar = ({ data, id ,userId,userName}) => {
     const [iconToggle, setIconToggle] = useState(false);
     const handlePress = () => {
         setIconToggle(true);
@@ -50,11 +48,12 @@ const WorkerRankBar = ({ data }) => {
             </View>
             <TouchableOpacity onPress={async () => {
                 // const userId = getUserId();
-                const userId = "0qD34d7S4FaD6afL6cVN3nOE9zJ2";
-                const clientName = "Dayanand"
+                // const userId = "0qD34d7S4FaD6afL6cVN3nOE9zJ2";
+                // const clientName = "Dayanand"
                 const workerId = data[0];
-                const response = await callUser(userId, clientName, workerId);
+                const response = await callUser(userId, userName, workerId);
                 console.log("Call User Response:", response);
+                
                 if (response["code"] == -1) {
                     Alert.alert('User offline', 'The recipient is offline, please try again after some time', [
                         {
@@ -62,6 +61,14 @@ const WorkerRankBar = ({ data }) => {
                             onPress: () => console.log('OK Pressed'),
                         },
                     ]);
+                }else{
+                    router.push({
+                    pathname: '/call/CallingScreen',
+                    params: {
+                        callee_uid: workerId,
+                        callee_name: data[2] || "Worker"
+                    }
+                });
                 }
             }}>
                 <MaterialIcons name="call" size={24} color="green" />
@@ -133,93 +140,36 @@ const WorkerRankingScreen = () => {
     const [mode, setMode] = useState('list');
     let { height, width } = useWindowDimensions();
     height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
-    const data = [
-        {
-            id: 1,
-            name: 'Ramesh Kumar',
-            jobType: 'Plumber',
-            rating: 4.5,
-        },
-        {
-            id: 2,
-            name: 'Suresh Patel',
-            jobType: 'Electrician',
-            rating: 4.7,
-        },
-        {
-            id: 3,
-            name: 'Amit Singh',
-            jobType: 'Carpenter',
-            rating: 4.3,
-        },
-        {
-            id: 4,
-            name: 'Vikram Das',
-            jobType: 'Painter',
-            rating: 4.6,
-        },
-        {
-            id: 5,
-            name: 'Rajesh Sharma',
-            jobType: 'Welder',
-            rating: 4.4,
-        },
-        {
-            id: 6,
-            name: 'Manoj Yadav',
-            jobType: 'Mason',
-            rating: 4.2,
-        }, {
-            id: 7,
-            name: 'Deepak Verma',
-            jobType: 'Gardener',
-            rating: 4.8,
-        }, {
-            id: 8,
-            name: 'Anil Gupta',
-            jobType: 'Roofer',
-            rating: 4.1,
-        }, {
-            id: 9,
-            name: 'Sunil Mehta',
-            jobType: 'Tiler',
-            rating: 4.0,
-        }
-    ]
+    
     const [user, setUser] = useState<any>(null);
+    const [name, setName] = useState<string | null>(null);
     const [nearByWorkersLoc, setNearbyWorkersLoc] = useState([]);
     const [clientLoc, setClientLoc] = useState({ "lat": 0, "long": 0 });
-    // useEffect(() => {
-    //     const fetchUser = async () => {
-    //         const user = await AsyncStorage.getItem("uid");
-    //         setUser(user);
-    //         return user;
-    //     };
-    //     const res = fetchUser();
-    //     if(!res) {
-    //         router.replace('/registration/EmailScreen');
-    //     }
-    // }, [])
 
-    async function handleMapOptionClick() {
-        // if(!user) {
-        //     router.replace('/registration/EmailScreen');
-        //     return;
-        // }
-        setMode('map');
-
-    }
+    const fetchWorkers = async (uid: string | null) => {
+        console.log("Fetching nearby workers for User ID:", uid);
+        const workersLoc = await fetchNearByWorkers(uid);
+        // const workersLoc = await fetchNearByWorkers(user);
+        console.log("API Response for Nearby Workers:", workersLoc);
+        console.log("Nearby Workers Location Data:", workersLoc["nearby_workers"]);
+        setNearbyWorkersLoc(workersLoc["nearby_workers"]);
+        console.log("Client Location Data:", workersLoc["client_loc"]);
+        setClientLoc(workersLoc["client_loc"]);
+    };
 
     useEffect(() => {
-        const fetchWorkers = async () => {
-            const workersLoc = await fetchNearByWorkers("0qD34d7S4FaD6afL6cVN3nOE9zJ2");
-            // const workersLoc = await fetchNearByWorkers(user);
-            console.log("Nearby Workers Location Data:", workersLoc["nearby_workers"]);
-            setNearbyWorkersLoc(workersLoc["nearby_workers"]);
-            console.log("Client Location Data:", workersLoc["client_loc"]);
-            setClientLoc(workersLoc["client_loc"]);
+        const fetchUser = async () => {
+            const uid = await getUserId();
+            if (!uid) {
+                router.replace('/login/');
+            }
+            const uname = await AsyncStorage.getItem("name");
+            await fetchWorkers(uid);
+            setUser(uid);
+            setName(uname);
         };
-        fetchWorkers();
+        fetchUser();
+
     }, [])
 
 
@@ -291,13 +241,13 @@ const WorkerRankingScreen = () => {
                         </TouchableOpacity>
                     </View>
                     <View style={styles.contentContainer}>
-                        {mode === 'list' ? (
+                        {mode === 'list' && user && name ? (
                             <ScrollView style={{ marginTop: 0, width: '100%', height: '100%', padding: 10 }}>
                                 {/* {data.map((item) => (
                                     <WorkerRankBar key={item.id} data={item} />
                                 ))} */}
                                 {nearByWorkersLoc.map((item, index) => (
-                                    <WorkerRankBar key={index} data={item} id={index} />
+                                    <WorkerRankBar key={index} data={item} id={index} userId={user} userName={name}/>
                                 ))}
                             </ScrollView>
                         ) : (mode === 'map' && clientLoc.lat !== 0 && clientLoc.long !== 0 ? <MapContainer NearByWorkersLocList={nearByWorkersLoc} UserLoc={clientLoc || { lat: 0, long: 0 }} /> : null)

@@ -28,12 +28,21 @@ const CallRoomScreen = () => {
     requestAudioPermission();
     setChannelName(CN);
   }, []);
+
+  // useEffect(() => {
+  //   if (peerIds.length !== 2) {
+  //     console.log("no of users:", peerIds.length);
+  //     router.back();
+  //   }
+  // }, [peerIds]);
+
+
   return (
 
     <SafeAreaProvider style={{ height: '100%' }}>
       <SafeAreaView style={{ flex: 1 }}>
-        {
-          peerIds.length == 2 ?
+        {/* {
+          peerIds.length == 2 ? */}
             <View style={styles.bg}>
               <View style={styles.header}>
                 <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>
@@ -53,8 +62,8 @@ const CallRoomScreen = () => {
                   {isMute ? <FontAwesome name="microphone" size={30} color="black" /> : <FontAwesome name="microphone-slash" size={30} color="black" />}
                 </TouchableOpacity>
               </View>
-            </View> : (console.log("no of users : ",peerIds.length), router.back(), null)
-        }
+            </View> : null
+        {/* } */}
       </SafeAreaView>
     </SafeAreaProvider >
   )

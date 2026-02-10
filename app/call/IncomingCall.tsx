@@ -1,20 +1,38 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { hangUpCall, joinCall } from '@/services/GlobalAPIs';
 import { getUserId } from '@/utils/AsyncStorageUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const IncomingCall = () => {
     const router = useRouter()
-    // const user = getUserId();
-    const user = "EbQZRH72wnRu2DRpzieDdR9rSvG2";
-    const myName = "Darshan";
+    const [user, setUser] = useState<string | null>('');
+    const [name, setName] = useState<string | null>('');
+    const [email, setEmail] = useState<string | null>('');
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            const userId = await getUserId();
+            console.log("Fetched User ID:", userId);
+            if (!userId) {
+                router.replace("/login");
+            }
+            const uname = await AsyncStorage.getItem("name");
+            const uemail = await AsyncStorage.getItem("email");
+            setUser(userId);
+            setName(uname);
+            setEmail(uemail);
+        }
+        fetchUserId();
+    }, [])
+
     const { caller_uid, caller_name } = useLocalSearchParams();
 
-    async function acceptCall(myself: string,Mname: string,anotherUser: string,Aname: string){
-        const response = await joinCall(myself,Mname,anotherUser,Aname);
-        console.log("join call response : ",response);
+    async function acceptCall(myself: string | null, Mname: string | null, anotherUser: string, Aname: string) {
+        const response = await joinCall(myself, Mname, anotherUser, Aname);
+        console.log("join call response : ", response);
     }
 
     return (
@@ -38,12 +56,13 @@ const IncomingCall = () => {
                         </Text>
                     </View>
                     <View style={styles.callOptions}>
-                        <TouchableOpacity style={{ padding: 15, borderRadius: 50, borderColor: 'green', borderWidth: 2 }} onPress={()=>acceptCall(user,myName,caller_uid,caller_name)}>
+                        <TouchableOpacity style={{ padding: 15, borderRadius: 50, borderColor: 'green', borderWidth: 2 }} onPress={() => acceptCall(user, name, caller_uid, caller_name)}>
                             <MaterialIcons name="call" size={45} color="green" />
                         </TouchableOpacity>
                         <TouchableOpacity style={{ padding: 15, borderRadius: 50, borderColor: 'red', borderWidth: 2 }} onPress={() => {
                             hangUpCall(caller_uid.toString());
-                             router.back() }}>
+                            router.back()
+                        }}>
                             <MaterialIcons name="call-end" size={45} color="red" />
                         </TouchableOpacity>
                     </View>

@@ -1,19 +1,22 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, Touchable, TouchableOpacity, View } from "react-native";
 import React from "react";
+import { useRouter } from "expo-router";
 
 const NavBar = () => {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <Text style={styles.appName}>SevaVaani</Text>
       <View style={styles.rightSide}>
-        <Image
-          source={require("../assets/navbar/notification.png")}
-          style={{ width: 25, height: 25 }}
-        />
+        <TouchableOpacity onPress={()=>router.push("/client/Notifications")}>
+          <Image
+            source={require("../assets/navbar/notification.png")}
+            style={{ width: 25, height: 25 }}
+          /></TouchableOpacity>
         <View style={styles.languageIcon}>
           <Image
             source={require("../assets/navbar/language.png")}
-            style={{ width: 25, height: 25 }}
+            style={{ width: 30, height: 30 }}
           />
           <Text style={styles.lang}>EN</Text>
         </View>
@@ -47,11 +50,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    borderBlockColor:'black',
-    backgroundColor:'#D7D3D3',
-    borderRadius:10,
-    paddingHorizontal:5,
-    gap:2
+    borderBlockColor: 'black',
+    backgroundColor: '#D7D3D3',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    gap: 2
   },
   lang: {
     color: "black",

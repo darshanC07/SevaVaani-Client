@@ -67,7 +67,9 @@ const stopBackgroundLocation = async () => {
 export default function Layout() {
 
 
-  return (<Stack>
+  return (
+  <Stack>
+    <Stack.Screen name="index" options={{ headerShown: false }} />
     <Stack.Screen name="OnBoarding1" options={{ headerShown: false }} />
     <Stack.Screen name="OnBoarding2" options={{ headerShown: false }} />
     <Stack.Screen name="OnBoarding3" options={{ headerShown: false }} />
@@ -81,6 +83,10 @@ export default function Layout() {
     />
     <Stack.Screen
       name="call"
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="login"
       options={{ headerShown: false }}
     />
 

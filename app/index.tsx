@@ -1,22 +1,25 @@
 import { Redirect } from "expo-router";
-import { useEffect, useRef } from "react";
+import {  useEffect, useRef, useState } from "react";
 import { startBackgroundLocation } from "./_layout";
 import EventSource from "react-native-sse";
 import { BASE_URL } from "@/services/GlobalAPIs";
 import { getUserId } from "@/utils/AsyncStorageUtils";
 import { useRouter } from "expo-router";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Text } from "react-native";
 
 export default function Index() {
   const router = useRouter();
+  const [user, setUser] = useState<string | null>(null);
   const esRef = useRef<EventSource>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     const initSSE = async () => {
-      // const uid = await getUserId();
+      const uid = await getUserId();
       // const uid = "0qD34d7S4FaD6afL6cVN3nOE9zJ2";
-      const uid = "EbQZRH72wnRu2DRpzieDdR9rSvG2";
+      // const uid = "EbQZRH72wnRu2DRpzieDdR9rSvG2";
       if (!uid || !isMounted) return;
 
       const es: EventSource = new EventSource(`${BASE_URL}/call_events/${uid}`);
@@ -97,9 +100,24 @@ export default function Index() {
     // };
   }, []);
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const uid = await getUserId();
+      setUser(uid);
+      if (uid === null) {
+        router.replace("/login");
+      } else {
+        router.replace("/client");
+      }
+    }
+    fetchUser();
+  }, [user]);
+
+
   // return <Redirect href="/registration/EmailScreen" />;
   // return <Redirect href="/client/WorkerRankingScreen" />;
-  return <Redirect href="/client/" />;
+  // return <Redirect href="/client/" />;
+  // return <Redirect href="/login/" />;
   // return <Redirect href="/client/JobRequest" />;
   // return <Redirect href="/client/CommunicationRoom" />;
   // return <Redirect href="/call/CallingScreen" />;
@@ -107,4 +125,11 @@ export default function Index() {
   // return <Redirect href="/call/CallRoomScreen" />;
   // return <Redirect href="/rooms/" />;
   // return <Redirect href="/AppWriteOTP" />;
+  return (
+    <SafeAreaProvider style={{ flex: 1 , backgroundColor : '#4560F4'}}>
+      <SafeAreaView style={{ flex: 1,justifyContent:'center', alignItems:'center' }}>
+        <Text style={{ color: 'white', fontSize: 30,fontWeight : 'bold' }}>SevaVaani</Text>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  )
 }

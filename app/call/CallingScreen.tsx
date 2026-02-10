@@ -2,9 +2,10 @@ import { Image, ImageBackground, StyleSheet, Text, View, Animated, Easing, Touch
 import React, { useEffect, useRef } from 'react'
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useLocalSearchParams } from 'expo-router';
 const CallingScreen = () => {
     const rotation = useRef(new Animated.Value(0)).current;
-
+    const { caller_uid, caller_name } = useLocalSearchParams();
     useEffect(() => {
         Animated.loop(
             Animated.timing(rotation, {
@@ -27,7 +28,7 @@ const CallingScreen = () => {
                 <View style={styles.bg}>
                     <View style={styles.calleeInfoAndStatus}>
                         <Text style={[styles.text, { fontSize: 30, fontWeight: 'bold' }]}>
-                            Darshan
+                            {caller_name || 'Unknown Caller'}
                         </Text>
                         <Text style={styles.text}>
                             Calling...
@@ -40,7 +41,7 @@ const CallingScreen = () => {
                                 style={styles.avatarImage}
                             />
                         </Animated.View>
-                        <Text style={styles.avatarText}>D</Text>
+                        <Text style={styles.avatarText}>{caller_name[0]}</Text>
                     </View>
                     <TouchableOpacity>
                         <View style={styles.hangupWrapper}>

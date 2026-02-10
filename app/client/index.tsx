@@ -1,6 +1,6 @@
 import BottomNavBar from "@/components/BottomNavBar";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -14,8 +14,15 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
+import { getUserId } from "@/utils/AsyncStorageUtils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const Index = () => {
   const router = useRouter();
+
+  const [user, setUser] = useState<string | null>('');
+  const [name, setName] = useState<string | null>('');
+  const [email, setEmail] = useState<string | null>('');
 
   const navImage = require("../../assets/Client_HomeScreen/Washing_man.png");
   const searchIcon = require("../../assets/Client_HomeScreen/Search.png");
@@ -34,6 +41,22 @@ const Index = () => {
   //   };
   // }, []);
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const userId = await getUserId();
+      console.log("Fetched User ID:", userId);
+      if (!userId) {
+        router.replace("/login");
+      }
+      const uname = await AsyncStorage.getItem("name");
+      const uemail = await AsyncStorage.getItem("email");
+      setUser(userId);
+      setName(uname);
+      setEmail(uemail);
+    }
+    fetchUserId();
+   }, [])
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <NavBar />
@@ -44,7 +67,7 @@ const Index = () => {
 
           <View style={styles.headerRow}>
             <View style={styles.headerTextContainer}>
-              <Text style={styles.greetingText}>Good morning Ramesh</Text>
+              <Text style={styles.greetingText}>Good Morning, {name}</Text>
               <Text style={styles.headerMainText}>
                 Post a job and get workers near you
               </Text>
@@ -56,7 +79,7 @@ const Index = () => {
           <View style={styles.searchRow}>
             <TextInput
               style={styles.searchBar}
-              placeholder="Search Jobs..."
+              placeholder="Search..."
               placeholderTextColor="grey"
             />
             <View style={styles.searchIconBox}>
@@ -89,13 +112,13 @@ const Index = () => {
               </View>
 
               <View style={styles.bottomCardsRow}>
-                <TouchableOpacity onPress={() => router.push("/client/PostNewJob")}>
+                <TouchableOpacity onPress={() => router.push("/client/PostNewJob")} style={{ flex: 1 }}>
                   <View style={styles.actionCard}>
                     <Image source={addIcon} style={styles.addIcon} />
                     <Text style={styles.actionText}>Post a New Job</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push("/client/WorkerRankingScreen")}>
+                <TouchableOpacity onPress={() => router.push("/client/WorkerRankingScreen")} style={{ flex: 1 }}>
                   <View style={styles.actionCard}>
                     <Image source={worker} style={styles.workerIcon} />
                     <Text style={styles.actionText}>Workers</Text>
@@ -112,7 +135,7 @@ const Index = () => {
           <View style={styles.scrollView}>
             <Text style={styles.recentTitle}>My Recent Jobs</Text>
 
-            <ScrollView style={{flex : 1,paddingVertical  : 10}}>
+            <ScrollView style={{ flex: 1, paddingVertical: 10 }}>
               <View style={styles.jobCard}>
                 <View style={styles.jobHeader}>
                   <Image source={plumbingIcon} style={styles.jobIcon} />
@@ -124,7 +147,7 @@ const Index = () => {
 
                 <View style={styles.jobFooter}>
                   <Text style={styles.jobStatus}>Completed</Text>
-                  <TouchableOpacity style={styles.viewRequestButton}>
+                  <TouchableOpacity style={styles.viewRequestButton} onPress={() => router.push("/client/JobRequest")}>
                     <Text style={styles.viewRequest}>View Request</Text>
                   </TouchableOpacity>
                 </View>
@@ -230,13 +253,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 8,
     height: 160,
+    // gap : 5
   },
   leftColumn: {
-    width: "43%",
+    width: "44%",
     gap: 5,
   },
   rightColumn: {
-    width: "53%",
+    width: "54%",
     gap: 5,
   },
   cardLarge: {
@@ -270,7 +294,9 @@ const styles = StyleSheet.create({
   bottomCardsRow: {
     flexDirection: "row",
     height: "70%",
+    width: "100%",
     gap: 5,
+    flex : 1,
   },
   actionCard: {
     justifyContent: "center",
@@ -278,7 +304,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: "black",
     borderWidth: 1,
-    width: 90,
+    width: '100%',
     height: "100%",
   },
   completedCard: {
@@ -343,7 +369,7 @@ const styles = StyleSheet.create({
     borderColor: "black",
     borderWidth: 1,
     padding: 10,
-    marginBottom : 10
+    marginBottom: 10
   },
   jobHeader: {
     flexDirection: "row",

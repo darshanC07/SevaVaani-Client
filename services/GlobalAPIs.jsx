@@ -2,6 +2,20 @@ import axios from "axios";
 
 export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
 
+export const loginClient = async (email, password) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/login`,
+      { email: email, password: password, role: "client" },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Login failed:", err);
+    throw err;
+  }
+};
+
 export const UpdateClientLoc = async (CLIENT_ID, latitude, longitude) => {
   try {
     console.log("Sending location:", { latitude, longitude });

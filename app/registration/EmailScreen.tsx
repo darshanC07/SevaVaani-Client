@@ -1,5 +1,8 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  Image,
+  ActivityIndicator,
   Platform,
   StatusBar,
   StyleSheet,
@@ -7,24 +10,21 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View,
-  Keyboard,
+  View
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useState, useRef, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import config from "../../config.json";
-import { ActivityIndicator } from "react-native";
 
 const EmailScreen = () => {
   const router = useRouter();
+  const { role } = useLocalSearchParams();
   let { height, width } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
   const [uid, setUid] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     async function checkUserExists() {
       const uid = await AsyncStorage.getItem("uid");
@@ -50,6 +50,7 @@ const EmailScreen = () => {
         body: JSON.stringify({
           email: email,
           password: password,
+          role: role,
         }),
       });
 
@@ -60,7 +61,7 @@ const EmailScreen = () => {
 
         router.push({
           pathname: "/registration/EnterMobile",
-          params: { uid: data.uid },
+          params: { uid: data.uid, role: role },
         });
       } else {
         alert(data.error || "Failed to create user");

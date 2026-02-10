@@ -1,5 +1,7 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
 import {
-  Image,
+  Keyboard,
   Platform,
   StatusBar,
   StyleSheet,
@@ -7,16 +9,14 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View,
-  Keyboard,
+  View
 } from "react-native";
-import React, { useState, useRef, use } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
 import config from "../../config.json";
 
 const OTPScreen = () => {
-  const {number,uid} = useLocalSearchParams();
+  const {number,uid,role} = useLocalSearchParams();
+  const router = useRouter();
   const [otp, setOtp] = useState("");
   const otpInputRef = useRef<TextInput>(null);
   let { height, width } = useWindowDimensions();
@@ -33,13 +33,15 @@ const OTPScreen = () => {
         body: JSON.stringify({
           entered_otp: otp,
           uid: uid,
+          role: role,
         }),
       });
       const data = await res.json();
       if (res.ok) {
         console.log("OTP verified successfully");
         alert("OTP verified successfully");
-          
+        // Navigate to client home screen
+        router.push("/client");
       } else {
         console.log("OTP verification failed:", data.message);
         alert("OTP verification failed: " + data.message);

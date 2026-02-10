@@ -6,6 +6,7 @@ export default function Index() {
     startBackgroundLocation();
   }, []);
  // return <Redirect href="/registration/EmailScreen" />;
-  return <Redirect href="/client" />;
+  // return <Redirect href="/client" />;
   // return <Redirect href="/AppWriteOTP" />;
+  return <Redirect href="/registration" />;
 }

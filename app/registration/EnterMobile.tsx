@@ -1,5 +1,7 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  Image,
+  NativeModules,
   Platform,
   StatusBar,
   StyleSheet,
@@ -7,17 +9,14 @@ import {
   TextInput,
   TouchableOpacity,
   useWindowDimensions,
-  View,
-  NativeModules,
+  View
 } from "react-native";
-import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
 
 const EnterMobile = () => {
   const { OTPRequester } = NativeModules;
   const router = useRouter();
-  const { uid } = useLocalSearchParams();
+  const { uid, role } = useLocalSearchParams();
   const [countryCode, setCountryCode] = useState("91");
   const [mobile, setMobile] = useState("");
   let { height, width } = useWindowDimensions();
@@ -25,9 +24,14 @@ const EnterMobile = () => {
 
   async function handleContinue() {
     if (mobile.length == 10 && uid) {
+      if (!OTPRequester) {
+        alert("OTP service not available. Skipping OTP verification.");
+        router.push({pathname:"/registration/OTPScreen", params:{number:mobile,uid:uid,role:role}});
+        return;
+      }
       const text = await OTPRequester.requestOTP(uid);
       if(text === "success"){
-        router.push({pathname:"/registration/OTPScreen/", params:{number:mobile,uid:uid}});
+        router.push({pathname:"/registration/OTPScreen", params:{number:mobile,uid:uid,role:role}});
       } else{
         alert("Failed to request OTP. Please try again.");
       }

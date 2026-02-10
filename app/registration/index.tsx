@@ -1,3 +1,5 @@
+import { useRouter } from "expo-router";
+import React from "react";
 import {
   Image,
   Platform,
@@ -8,9 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
 const index = () => {
   const router = useRouter()
@@ -70,7 +70,7 @@ const index = () => {
           </Text>
         </View>
         <View>
-          <TouchableOpacity style={styles.selectionContainer}>
+          <TouchableOpacity style={styles.selectionContainer} onPress={()=>router.push("/registration/EmailScreen?role=recruiter")}>
             <View style={styles.imgCircle}>
               <Image
                 source={require("../../assets/roles/client.png")}
@@ -86,7 +86,7 @@ const index = () => {
               </Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.selectionContainer} onPress={()=>router.push("registration/EnterMobile")}>
+          <TouchableOpacity style={styles.selectionContainer} onPress={()=>router.push("/registration/EmailScreen?role=recruiter")}>
             <View style={styles.imgCircle}>
               <Image
                 source={require("../../assets/roles/worker.png")}
@@ -104,7 +104,7 @@ const index = () => {
         </View>
       </View>
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.continueButton} activeOpacity={0.9} onPress={()=>router.push("registration/EnterMobile")}>
+        <TouchableOpacity style={styles.continueButton} activeOpacity={0.9} onPress={()=>router.push("/registration/EmailScreen?role=worker")}>
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
       </View>

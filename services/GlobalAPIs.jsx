@@ -94,3 +94,31 @@ export const joinCall = async (user1, user1_name, user2, user2_name) => {
     console.error("Failed to join call:", err);
   }
 };
+
+export const postJob = async (jobData) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/post_job`, jobData, {
+      "Content-Type": "application/json",
+    });
+    console.log("Job posted successfully:", response.data);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to post job:", err);
+    if (err.response) {
+      console.error("Error response data:", err.response.data);
+      console.error("Error response status:", err.response.status);
+    }
+    throw err;
+  }
+};
+
+export const fetchJobs = async (userId) => {
+  try {
+    console.log("Fetching jobs for userId:", userId);
+    const response = await axios.get(`${BASE_URL}/jobs/client/${userId}`);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch jobs:", err);
+    throw err;
+  }
+};

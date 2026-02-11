@@ -1,4 +1,4 @@
-import BottomNavBar from "@/components/BottomNavBar";
+import BottomNavBar from "../../components/BottomNavBar";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,8 +14,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
-import { getUserId } from "@/utils/AsyncStorageUtils";
+import { getUserId } from "../../utils/AsyncStorageUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchJobs } from "../../services/GlobalAPIs";
 
 const Index = () => {
   const router = useRouter();
@@ -23,6 +24,9 @@ const Index = () => {
   const [user, setUser] = useState<string | null>('');
   const [name, setName] = useState<string | null>('');
   const [email, setEmail] = useState<string | null>('');
+
+  const [jobData, setJobData] = useState([]);
+  const [isJobDataLoading, setIsJobDataLoading] = useState(false);
 
   const navImage = require("../../assets/Client_HomeScreen/Washing_man.png");
   const searchIcon = require("../../assets/Client_HomeScreen/Search.png");
@@ -41,6 +45,26 @@ const Index = () => {
   //   };
   // }, []);
 
+  async function getJobData(userId) {
+    setIsJobDataLoading(true);
+    try {
+    
+      const data = await fetchJobs(userId);
+      console.log("Raw job data response:", data);
+      if (data) {
+        console.log("Fetched job data:", data.jobs);
+        console.log("type : ", typeof data.jobs);
+        setJobData(data.jobs);
+      } else {
+        console.error("Failed to fetch job data - data.length:", data.jobs.length);
+      }
+    } catch (error) {
+      console.error("Error fetching job data:", error);
+    } finally {
+      setIsJobDataLoading(false);
+    }
+  }
+
   useEffect(() => {
     const fetchUserId = async () => {
       const userId = await getUserId();
@@ -53,9 +77,30 @@ const Index = () => {
       setUser(userId);
       setName(uname);
       setEmail(uemail);
+      getJobData(userId);
     }
     fetchUserId();
-   }, [])
+  }, [])
+
+
+  function timeAgo(isoTime) {
+    const past = new Date(isoTime);
+    const now = new Date();
+    const diff = now - past;
+
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return `${sec} seconds ago`;
+
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min} minutes ago`;
+
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr} hours ago`;
+
+    const day = Math.floor(hr / 24);
+    return `${day} days ago`;
+  }
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -135,30 +180,35 @@ const Index = () => {
           <View style={styles.scrollView}>
             <Text style={styles.recentTitle}>My Recent Jobs</Text>
 
-            <ScrollView style={{ flex: 1, paddingVertical: 10 }}>
-              <View style={styles.jobCard}>
-                <View style={styles.jobHeader}>
-                  <Image source={plumbingIcon} style={styles.jobIcon} />
-                  <Text style={styles.jobTitle}>
-                    Repairing of bathroom tap
-                  </Text>
-                  <Text style={styles.jobTime}>2 mins ago</Text>
-                </View>
+            <ScrollView contentContainerStyle={{ flex: 1, paddingVertical: 10 }}>
+              {isJobDataLoading ? <Text>Loading...</Text> :
+                jobData.length === 0 ? <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}><Text>No recent jobs found.</Text></View> : (
+                  console.log("Rendering job data:", jobData),
+                  jobData.map((job, index) => (
+                    <View style={styles.jobCard} key={job.job_id}>
+                      <View style={styles.jobHeader}>
+                        <Image source={plumbingIcon} style={styles.jobIcon} />
+                        <Text style={styles.jobTitle}>
+                          {job.job_details}
+                        </Text>
+                        <Text style={styles.jobTime}>{timeAgo(job.posted_at)}</Text>
+                      </View>
 
-                <View style={styles.jobFooter}>
-                  <Text style={styles.jobStatus}>Completed</Text>
-                  <TouchableOpacity style={styles.viewRequestButton} onPress={() => router.push("/client/JobRequest")}>
-                    <Text style={styles.viewRequest}>View Request</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+                      <View style={styles.jobFooter}>
+                        <Text style={styles.jobStatus}>{job.status}</Text>
+                        <TouchableOpacity style={styles.viewRequestButton} onPress={() => router.push("/client/JobRequest")}>
+                          <Text style={styles.viewRequest}>View Request</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>)))
+              }
             </ScrollView>
           </View>
         </View>
-      </View>
+      </View >
 
       <BottomNavBar />
-    </SafeAreaView>
+    </SafeAreaView >
   );
 };
 
@@ -296,7 +346,7 @@ const styles = StyleSheet.create({
     height: "70%",
     width: "100%",
     gap: 5,
-    flex : 1,
+    flex: 1,
   },
   actionCard: {
     justifyContent: "center",

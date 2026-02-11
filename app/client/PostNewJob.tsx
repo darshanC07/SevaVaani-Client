@@ -1,26 +1,28 @@
-import BottomNavBar from "@/components/BottomNavBar";
+import BottomNavBar from "../../components/BottomNavBar";
+import { postJob } from "../../services/GlobalAPIs";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Alert, Dimensions, KeyboardAvoidingView, Modal, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
+import ErrorModal from "../../components/ErrorModal";
+import SuccessModal from "../../components/SuccessModal";
+import { getUserId } from "../../utils/AsyncStorageUtils";
 
 const PostNewJob = () => {
   const router = useRouter();
   const [serviceText, setServiceText] = useState("");
   const [isServiceOpen, setIsServiceOpen] = useState(false);
   const [durationHours, setDurationHours] = useState("");
+  const [jobDetails, setJobDetails] = useState("");
+  const [location, setLocation] = useState("");
+  const [budgetMin, setBudgetMin] = useState("");
+  const [budgetMax, setBudgetMax] = useState("");
+  const [description, setDescription] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
 
   let { height } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ?? 24);
@@ -38,6 +40,18 @@ const PostNewJob = () => {
     []
   );
 
+  async function handleOk() {
+    setShowSuccessAlert(false);
+    setServiceText("");
+    setJobDetails("");
+    setLocation("");
+    setBudgetMin("");
+    setBudgetMax("");
+    setDurationHours("");
+    setDescription("");
+    router.replace("/client");
+  }
+
   const filteredServices = useMemo(() => {
     const query = serviceText.trim().toLowerCase();
     if (!query) return serviceOptions;
@@ -45,6 +59,59 @@ const PostNewJob = () => {
       item.toLowerCase().includes(query)
     );
   }, [serviceOptions, serviceText]);
+
+  const handlePostJob = async () => {
+    // Validation
+    if (!serviceText.trim()) {
+      Alert.alert("Error", "Please select a service type");
+      return;
+    }
+    if (!jobDetails.trim()) {
+      Alert.alert("Error", "Please enter job details");
+      return;
+    }
+    if (!location.trim()) {
+      Alert.alert("Error", "Please enter job location");
+      return;
+    }
+
+    setIsPosting(true);
+
+    try {
+      // Get actual user ID from AsyncStorage
+      const userId = await getUserId();
+      console.log("Retrieved userId:", userId);
+      if (!userId) {
+        Alert.alert("Error", "User not authenticated. Please login again.");
+        return;
+      }
+
+      const jobData = {
+        user_id: userId,
+        service_type: serviceText,
+        job_details: jobDetails,
+        location: location,
+        budget_min: budgetMin || null,
+        budget_max: budgetMax || null,
+        duration: durationHours || null,
+        description: description
+      };
+
+      console.log("Sending job data:", jobData);
+
+      const response = await postJob(jobData);
+
+      setShowSuccessAlert(true);
+    } catch (error) {
+      setShowErrorAlert(true);
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    router.back();
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -69,7 +136,7 @@ const PostNewJob = () => {
                   style={[
                     styles.serviceInputWrap,
                     isServiceOpen && styles.fieldInputWrapOpen,
-                    
+
                   ]}
                 >
                   <TextInput
@@ -99,7 +166,7 @@ const PostNewJob = () => {
                             style={[
                               styles.dropdownItem,
                               index !== filteredServices.length - 1 &&
-                                styles.dropdownItemDivider,
+                              styles.dropdownItemDivider,
                             ]}
                             onPressIn={() => {
                               setServiceText(item);
@@ -120,6 +187,8 @@ const PostNewJob = () => {
                 <View style={styles.jobInputWrap}>
                   <TextInput
                     style={styles.jobInput}
+                    value={jobDetails}
+                    onChangeText={setJobDetails}
                     onFocus={() => setIsServiceOpen(false)}
                     placeholder="Enter job details"
                     placeholderTextColor="grey"
@@ -132,6 +201,8 @@ const PostNewJob = () => {
                 <View style={styles.locationInputWrap}>
                   <TextInput
                     style={styles.locationInput}
+                    value={location}
+                    onChangeText={setLocation}
                     onFocus={() => setIsServiceOpen(false)}
                     placeholder="Enter job location"
                     placeholderTextColor="grey"
@@ -146,6 +217,8 @@ const PostNewJob = () => {
                     <TextInput
                       style={styles.budgetMinInput}
                       keyboardType="number-pad"
+                      value={budgetMin}
+                      onChangeText={setBudgetMin}
                       placeholder="0.rs"
                       placeholderTextColor="grey"
                       onFocus={() => setIsServiceOpen(false)}
@@ -156,6 +229,8 @@ const PostNewJob = () => {
                     <TextInput
                       style={styles.budgetMaxInput}
                       keyboardType="number-pad"
+                      value={budgetMax}
+                      onChangeText={setBudgetMax}
                       placeholder="0.rs"
                       placeholderTextColor="grey"
                       onFocus={() => setIsServiceOpen(false)}
@@ -191,6 +266,8 @@ const PostNewJob = () => {
                     style={styles.descriptionInput}
                     multiline
                     textAlignVertical="top"
+                    value={description}
+                    onChangeText={setDescription}
                     placeholder="Enter job description"
                     placeholderTextColor="grey"
                     onFocus={() => setIsServiceOpen(false)}
@@ -199,11 +276,17 @@ const PostNewJob = () => {
               </View>
 
               <View style={styles.actionRow}>
-                <TouchableOpacity style={styles.cancelButton}>
+                <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.postButton}>
-                  <Text style={styles.postButtonText}>Post a Job</Text>
+                <TouchableOpacity
+                  style={[styles.postButton, isPosting && styles.postButtonDisabled]}
+                  onPress={handlePostJob}
+                  disabled={isPosting}
+                >
+                  <Text style={styles.postButtonText}>
+                    {isPosting ? "Posting..." : "Post a Job"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -211,6 +294,13 @@ const PostNewJob = () => {
         </View>
       </KeyboardAvoidingView>
       <BottomNavBar />
+
+      {/* Success Alert Modal */}
+      <SuccessModal isVisible={showSuccessAlert} toggleModal={setShowSuccessAlert} title="Success!" message="Your job has been posted successfully." handleOk={handleOk} />
+
+      {/* Error Alert Modal */}
+      <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="OOPs.." message="Unable to post a job" />
+
     </SafeAreaView>
   );
 };
@@ -454,4 +544,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 13,
   },
+  postButtonDisabled: {
+    backgroundColor: "#A0A0A0",
+  },
+  
+
+
 });

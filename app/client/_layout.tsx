@@ -8,7 +8,6 @@ export default function Layout() {
       <Stack.Screen name="WorkerRankingScreen" options={{ headerShown: false }} />
       <Stack.Screen name="JobRequest" options={{ headerShown: false }} />
       <Stack.Screen name="PostNewJob" options={{headerShown: false}}/>
-      <Stack.Screen name="CommunicationRoom" options={{ headerShown: false }} />
       <Stack.Screen name="Notifications" options={{ headerShown: false }} />
       {/* <Stack.Screen name="EnterMobile" options={{ headerShown: false }} />
       <Stack.Screen name="OTPScreen" options={{ headerShown: false }} />

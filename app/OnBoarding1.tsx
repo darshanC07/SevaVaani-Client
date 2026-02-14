@@ -1,7 +1,7 @@
-import { View, Text, Image, StyleSheet, TouchableHighlight, TouchableOpacity } from "react-native";
-import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import React from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 const OnBoarding1 = () => {
   const router = useRouter();
   return (

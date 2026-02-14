@@ -47,26 +47,7 @@ export const fetchNearByWorkers = async (CLIENT_ID) => {
   }
 };
 
-export const postJob = async (jobData) => {
-  try {
-    const response = await axios.post(
-      `${BASE_URL}/post_job`,
-      jobData,
-      {
-        "Content-Type": "application/json",
-      }
-    );
-    console.log("Job posted successfully:", response.data);
-    return response.data;
-  } catch (err) {
-    console.error("Failed to post job:", err);
-    if (err.response) {
-      console.error("Error response data:", err.response.data);
-      console.error("Error response status:", err.response.status);
-    }
-    throw err;
-  }
-};
+
 
 export const callUser = async (CLIENT_ID, CLIENT_NAME, WORKER_ID) => {
   try {

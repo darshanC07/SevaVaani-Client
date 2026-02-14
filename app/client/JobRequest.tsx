@@ -1,7 +1,7 @@
 import NavBar from "@/components/NavBar";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useRouter } from "expo-router";
-import React from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   ScrollView,
   StatusBar,
@@ -13,10 +13,69 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
+import { activityOnProposal, fetchWorkerDetails } from "@/services/GlobalAPIs";
+import SuccessModal from "@/components/SuccessModal";
+import ErrorModal from "@/components/ErrorModal";
 const JobRequest = () => {
   const router = useRouter();
+  let { request, requestId, jobId } = useLocalSearchParams();
+  request = JSON.parse(request);
   let { height } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
+  const [worker, setWorker] = useState({
+    name: "Worker",
+    email: "",
+    jobType: "",
+    workerRating: 0,
+    jobsDoneCount: 0,
+    experience: 0
+  });
+
+
+  const [isSuccessModal, setSuccessModal] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+
+
+  async function handleConfirmWorker() {
+    try{
+      const res = await activityOnProposal(jobId,request.workerId, requestId,1);
+      console.log("Worker confirmation response:", res);
+      setSuccessModal(true);
+    }catch(err){
+      console.error("Error confirming worker:", err);
+    }
+  }
+
+  async function handleRejectWorker() {
+    try{  
+      const res = await activityOnProposal(jobId,request.workerId, requestId,0);
+      console.log("Worker rejection response:", res);
+      setShowErrorAlert(true)
+    }catch(err){
+      console.error("Error rejecting worker:", err);
+    }
+  }
+
+  async function getUserDetails(uid) {
+    try {
+      console.log("Fetching details for user ID:", uid);
+      const workerData = await fetchWorkerDetails(uid);
+      console.log("Worker details response:", workerData);
+      setWorker(workerData.worker);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+    }
+  }
+
+  useEffect(() => {
+    const startFunction = async () => {
+      console.log("Received job id:", jobId);
+      if (jobId) {
+        await getUserDetails(request.workerId);
+      }
+    }
+    startFunction();
+  }, [jobId]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", height, justifyContent: 'space-between' }}>
@@ -26,22 +85,22 @@ const JobRequest = () => {
       <View style={styles.horizontalLine} />
       <View style={styles.container}>
         <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
-          <Text style={styles.pageTitle}>Job request from Kishor Kumar</Text>
+          <Text style={styles.pageTitle}>Job request from {worker.name}</Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.card}>
             <View style={styles.workerRow}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>KK</Text>
+                <Text style={styles.avatarText}>{worker.name[0]}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.workerName}>Kishor Kumar</Text>
-                <Text style={styles.rating}><AntDesign name="star" size={12} color="gold" style={{ alignSelf: 'center' }} /> 4.7 (150+ Jobs Completed)</Text>
-                <Text style={styles.exp}>Experience - 6 Years</Text>
+                <Text style={styles.workerName}>{worker.name}</Text>
+                <Text style={styles.rating}><AntDesign name="star" size={12} color="gold" style={{ alignSelf: 'center' }} /> {worker.workerRating} ({worker.jobsDoneCount} Jobs Completed)</Text>
+                <Text style={styles.exp}>Experience - {worker.experience} Years</Text>
               </View>
 
-              <Text style={styles.profession}>Plumber</Text>
+              <Text style={styles.profession}>{worker.jobType}</Text>
             </View>
           </View>
           <View style={styles.card}>
@@ -79,10 +138,10 @@ const JobRequest = () => {
               <Text style={styles.chatText}>Chat with worker</Text>
             </TouchableOpacity>
             <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.declineBtn}>
+              <TouchableOpacity style={styles.declineBtn} onPress={handleRejectWorker}>
                 <Text style={styles.actionText}>Decline</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.acceptBtn}>
+              <TouchableOpacity style={styles.acceptBtn} onPress={handleConfirmWorker}>
                 <Text style={[styles.actionText, { color: "white" }]}>
                   Accept
                 </Text>
@@ -91,6 +150,8 @@ const JobRequest = () => {
           </View>
         </ScrollView>
       </View>
+      <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Request Accepted." handleOk={() => setSuccessModal(false)} />
+      <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message="Request Rejected." />
       <BottomNavBar />
     </SafeAreaView>
   );

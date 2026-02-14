@@ -48,7 +48,7 @@ const Index = () => {
   async function getJobData(userId) {
     setIsJobDataLoading(true);
     try {
-    
+
       const data = await fetchJobs(userId);
       console.log("Raw job data response:", data);
       if (data) {
@@ -180,10 +180,10 @@ const Index = () => {
           <View style={styles.scrollView}>
             <Text style={styles.recentTitle}>My Recent Jobs</Text>
 
-            <ScrollView contentContainerStyle={{ flex: 1, paddingVertical: 10 }}>
+            <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
               {isJobDataLoading ? <Text>Loading...</Text> :
                 jobData.length === 0 ? <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}><Text>No recent jobs found.</Text></View> : (
-                  console.log("Rendering job data:", jobData),
+                  console.log("Rendering job data:", jobData[1].responses),
                   jobData.map((job, index) => (
                     <View style={styles.jobCard} key={job.job_id}>
                       <View style={styles.jobHeader}>
@@ -196,8 +196,14 @@ const Index = () => {
 
                       <View style={styles.jobFooter}>
                         <Text style={styles.jobStatus}>{job.status}</Text>
-                        <TouchableOpacity style={styles.viewRequestButton} onPress={() => router.push("/client/JobRequest")}>
-                          <Text style={styles.viewRequest}>View Request</Text>
+                        <TouchableOpacity style={styles.viewRequestButton} 
+                        // onPress={() => router.push("/client/JobRequest")}
+                        onPress={() => router.push({
+                          pathname: "/client/ViewJob",
+                          params: { job: JSON.stringify(job) }
+                        })}
+                        >
+                          <Text style={styles.viewRequest}>View</Text>
                         </TouchableOpacity>
                       </View>
                     </View>)))
@@ -455,8 +461,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     backgroundColor: "#4560F4",
-    height: 40,
-    width: "50%",
+    height: 30,
+    width: "30%",
     justifyContent: "center",
     alignItems: "center",
   },

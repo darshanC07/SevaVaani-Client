@@ -8,9 +8,10 @@ import {
   Text,
   TouchableOpacity,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const index = () => {
   const router = useRouter()
@@ -22,8 +23,8 @@ const index = () => {
         height: height,
         marginTop:
           Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0,
-        padding:20,
-        backgroundColor:'white',
+        padding: 20,
+        backgroundColor: 'white',
 
       }}
     >
@@ -59,7 +60,7 @@ const index = () => {
           // padding: 20,
           justifyContent: "space-evenly",
           height: height - 170,
-          paddingBottom:50
+          paddingBottom: 50
         }}
       >
         <View style={styles.textContainer}>
@@ -86,7 +87,7 @@ const index = () => {
               </Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.selectionContainer} onPress={()=>router.push("/registration/EmailScreen?role=recruiter")}>
+          <TouchableOpacity style={styles.selectionContainer} onPress={() => router.push("registration/EnterMobile")}>
             <View style={styles.imgCircle}>
               <Image
                 source={require("../../assets/roles/worker.png")}
@@ -104,7 +105,7 @@ const index = () => {
         </View>
       </View>
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.continueButton} activeOpacity={0.9} onPress={()=>router.push("/registration/EmailScreen?role=worker")}>
+        <TouchableOpacity style={styles.continueButton} activeOpacity={0.9} onPress={() => router.push("registration/EnterMobile")}>
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
       </View>

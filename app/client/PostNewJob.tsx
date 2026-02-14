@@ -1,11 +1,14 @@
-import BottomNavBar from "@/components/BottomNavBar";
-import { postJob } from "@/services/GlobalAPIs";
+import BottomNavBar from "../../components/BottomNavBar";
+import { postJob } from "../../services/GlobalAPIs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import { Alert, Dimensions, KeyboardAvoidingView, Modal, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
+import ErrorModal from "../../components/ErrorModal";
+import SuccessModal from "../../components/SuccessModal";
+import { getUserId } from "../../utils/AsyncStorageUtils";
 
 const PostNewJob = () => {
   const router = useRouter();
@@ -37,6 +40,18 @@ const PostNewJob = () => {
     []
   );
 
+  async function handleOk() {
+    setShowSuccessAlert(false);
+    setServiceText("");
+    setJobDetails("");
+    setLocation("");
+    setBudgetMin("");
+    setBudgetMax("");
+    setDurationHours("");
+    setDescription("");
+    router.replace("/client");
+  }
+
   const filteredServices = useMemo(() => {
     const query = serviceText.trim().toLowerCase();
     if (!query) return serviceOptions;
@@ -61,16 +76,16 @@ const PostNewJob = () => {
     }
 
     setIsPosting(true);
-    
+
     try {
       // Get actual user ID from AsyncStorage
-      const userId = await AsyncStorage.getItem("uid");
+      const userId = await getUserId();
       console.log("Retrieved userId:", userId);
       if (!userId) {
         Alert.alert("Error", "User not authenticated. Please login again.");
         return;
       }
-      
+
       const jobData = {
         user_id: userId,
         service_type: serviceText,
@@ -81,11 +96,11 @@ const PostNewJob = () => {
         duration: durationHours || null,
         description: description
       };
-      
+
       console.log("Sending job data:", jobData);
 
       const response = await postJob(jobData);
-      
+
       setShowSuccessAlert(true);
     } catch (error) {
       setShowErrorAlert(true);
@@ -121,7 +136,7 @@ const PostNewJob = () => {
                   style={[
                     styles.serviceInputWrap,
                     isServiceOpen && styles.fieldInputWrapOpen,
-                    
+
                   ]}
                 >
                   <TextInput
@@ -151,7 +166,7 @@ const PostNewJob = () => {
                             style={[
                               styles.dropdownItem,
                               index !== filteredServices.length - 1 &&
-                                styles.dropdownItemDivider,
+                              styles.dropdownItemDivider,
                             ]}
                             onPressIn={() => {
                               setServiceText(item);
@@ -264,8 +279,8 @@ const PostNewJob = () => {
                 <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.postButton, isPosting && styles.postButtonDisabled]} 
+                <TouchableOpacity
+                  style={[styles.postButton, isPosting && styles.postButtonDisabled]}
                   onPress={handlePostJob}
                   disabled={isPosting}
                 >
@@ -279,6 +294,13 @@ const PostNewJob = () => {
         </View>
       </KeyboardAvoidingView>
       <BottomNavBar />
+
+      {/* Success Alert Modal */}
+      <SuccessModal isVisible={showSuccessAlert} toggleModal={setShowSuccessAlert} title="Success!" message="Your job has been posted successfully." handleOk={handleOk} />
+
+      {/* Error Alert Modal */}
+      <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="OOPs.." message="Unable to post a job" />
+
       
       {/* Success Alert Modal */}
       <Modal

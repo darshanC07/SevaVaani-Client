@@ -1,6 +1,20 @@
 import axios from "axios";
 
-const BASE_URL = "http://172.18.59.210:5000";
+export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
+
+export const loginClient = async (email, password) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/login`,
+      { email: email, password: password, role: "client" },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Login failed:", err);
+    throw err;
+  }
+};
 
 export const UpdateClientLoc = async (CLIENT_ID, latitude, longitude) => {
   try {
@@ -50,6 +64,82 @@ export const postJob = async (jobData) => {
       console.error("Error response data:", err.response.data);
       console.error("Error response status:", err.response.status);
     }
+    throw err;
+  }
+};
+
+export const callUser = async (CLIENT_ID, CLIENT_NAME, WORKER_ID) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/call_user`,
+      {
+        caller_uid: CLIENT_ID,
+        caller_name: CLIENT_NAME,
+        callee_uid: WORKER_ID,
+      },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to call worker:", err);
+  }
+};
+
+export const hangUpCall = async (CALLER_ID) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/hangup_call`,
+      { caller_uid: CALLER_ID },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to hang up call:", err);
+  }
+};
+
+export const joinCall = async (user1, user1_name, user2, user2_name) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/join_call`,
+      {
+        user1: user1,
+        user1_name: user1_name,
+        user2: user2,
+        user2_name: user2_name,
+      },
+      { "Content-Type": "application/json" },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to join call:", err);
+  }
+};
+
+export const postJob = async (jobData) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/post_job`, jobData, {
+      "Content-Type": "application/json",
+    });
+    console.log("Job posted successfully:", response.data);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to post job:", err);
+    if (err.response) {
+      console.error("Error response data:", err.response.data);
+      console.error("Error response status:", err.response.status);
+    }
+    throw err;
+  }
+};
+
+export const fetchJobs = async (userId) => {
+  try {
+    console.log("Fetching jobs for userId:", userId);
+    const response = await axios.get(`${BASE_URL}/jobs/client/${userId}`);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch jobs:", err);
     throw err;
   }
 };

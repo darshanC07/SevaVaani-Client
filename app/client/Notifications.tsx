@@ -86,7 +86,6 @@ const Notifications = () => {
               marginLeft: 8,
               flex: 1,
               fontSize: 14,
-              color : 'black'
             }}
           />
           <Ionicons name="options-outline" size={18} color="gray" />

@@ -57,9 +57,23 @@ const Profile = () => {
             alignItems: "center",
           }}
         >
-          <Ionicons name="chevron-back" size={24} color="black" />
+        <Ionicons name="chevron-back" size={24} color="black" />
         </TouchableOpacity>
-        <View
+        <View style={{ flexDirection: "row", gap: 10 }}>
+        <TouchableOpacity onPress={() => router.push("/client/Notifications")}
+          style={{
+            width: 40,
+            height: 40,
+            backgroundColor: "white",
+            borderRadius: 10,
+            borderWidth: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+        <Ionicons name="notifications-outline" size={22} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity
           style={{
             width: 40,
             height: 40,
@@ -71,8 +85,10 @@ const Profile = () => {
             alignItems: "center",
           }}
         >
-          <Feather name="settings" size={24} color="black" />
-        </View>
+        <Feather name="settings" size={22} color="black" />
+        </TouchableOpacity>
+      </View>
+
       </View>
 
       <View

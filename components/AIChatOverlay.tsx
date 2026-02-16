@@ -1,23 +1,53 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, NativeModules, Alert } from 'react-native';
+import { initModel, predictIntent } from '../utils/ClassifierService';
 
 const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
+
+  const { TTS_module, STT_module } = NativeModules;
+  const [speechText, setSpeechText] = useState("");
+  const [result, setResult] = useState('');
+  const handleSpeak = async () => {
+    try {
+      const text = await STT_module.getSTTResult();
+      console.log("STT Result:", text);
+      setSpeechText(text);
+      const { intent, confidence } = predictIntent(text);
+      setResult(`Intent: ${intent} (${(confidence * 100).toFixed(1)}%)`);
+    } catch (err: any) {
+      Alert.alert("STT Error", err?.message ?? String(err));
+    }
+  }
+
+  useEffect(() => {
+    initModel()
+    handleSpeak();
+    return () => {
+      STT_module.speechStop();
+    }
+  }, [])
+
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>AI Assistant</Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <TouchableOpacity onPress={() => { onClose(); STT_module.speechStop() }} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.OverlayContainer}>
-        
-          <ScrollView 
-            style={styles.messagesContainer}
-            contentContainerStyle={styles.messagesContent}
-          >
-          </ScrollView>
-        
+
+        <ScrollView
+          style={styles.messagesContainer}
+          contentContainerStyle={styles.messagesContent}
+        >
+          <Text style={{ color: 'white', fontSize: 16, marginBottom: 10 }}>
+            Hello! I'm your AI assistant. How can I help you today?
+          </Text>
+          <Text style={{ color: 'white', fontSize: 16, marginBottom: 10 }}> {speechText} = {result}</Text>
+        </ScrollView>
+
       </View>
     </View>
   );
@@ -64,7 +94,7 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
   },
- 
+
   messagesContainer: {
     flex: 1,
     backgroundColor: 'transparent',

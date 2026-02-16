@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform } from "react-native";
+import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform, NativeModules, Alert } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import AIChatOverlay from "./AIChatOverlay";
@@ -6,15 +6,17 @@ import AIChatOverlay from "./AIChatOverlay";
 const BottomNavBar = () => {
   const router = useRouter();
   const [showOverlay, setShowOverlay] = useState(false);
+  
+
   return (
     <View style={styles.bg}>
       <View>
-        <TouchableOpacity onPress={()=>router.push('/client')} > 
-        <Image
-          source={require("../assets/BottomNavBar/Home.png")}
-          style={styles.icon}
-        />
-        <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Home</Text>
+        <TouchableOpacity onPress={() => router.push('/client')} >
+          <Image
+            source={require("../assets/BottomNavBar/Home.png")}
+            style={styles.icon}
+          />
+          <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Home</Text>
         </TouchableOpacity>
       </View>
       <View>
@@ -24,13 +26,13 @@ const BottomNavBar = () => {
         />
         <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Request</Text>
       </View>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={{
           position: 'relative',
           bottom: 20,
           backgroundColor: "#4560F4",
           borderRadius: 35,
-          borderColor: 'white', 
+          borderColor: 'white',
           borderWidth: 1,
           width: 70,
           height: 70,
@@ -38,6 +40,7 @@ const BottomNavBar = () => {
           alignItems: 'center'
         }}
         onPress={() => setShowOverlay(true)}
+        // onPress={handleSpeak}
       >
         <Image
           source={require("../assets/BottomNavBar/Microphone.png")}
@@ -62,13 +65,13 @@ const BottomNavBar = () => {
         />
         <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Chat</Text>
       </View>
-      <TouchableOpacity onPress={()=>router.push('/client/Profile' as any)} >
+      <TouchableOpacity onPress={() => router.push('/client/Profile' as any)} >
         <Image
           source={require("../assets/BottomNavBar/user.png")}
           style={styles.icon}
         /><Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Profile</Text>
-        </TouchableOpacity>
-      
+      </TouchableOpacity>
+
     </View>
   );
 };

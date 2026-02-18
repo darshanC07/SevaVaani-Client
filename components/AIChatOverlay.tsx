@@ -1,37 +1,82 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, NativeModules, Alert } from 'react-native';
 import { initModel, predictIntent } from '../utils/ClassifierService';
 import { useRouter } from 'expo-router';
-import scripts from '../scripts'
+import scripts from '../scripts.json';
 const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   const router = useRouter();
   const { TTS_module, STT_module } = NativeModules;
+  const [isConversationStarted, setIsConversationStarted] = useState(false);
   const [speechText, setSpeechText] = useState("");
   const [result, setResult] = useState('');
   const handleSpeak = async () => {
     try {
-      const text = await STT_module.getSTTResult();
+      await TTS_module.getMsg("Hello! How can I help you today?");
+      let text = await STT_module.getSTTResult();
       console.log("STT Result:", text);
       setSpeechText(text);
-      STT_module.speechStop();
+      if (!text) {
+        Alert.alert("No speech detected", "Please try speaking again.");
+        await STT_module.speechStop();
+        text = await STT_module.getSTTResult();
+      }
       const { intent, confidence } = predictIntent(text);
       setResult(`Intent: ${intent} (${(confidence * 100).toFixed(1)}%)`);
-      if (confidence > 0.5) {
+      console.log(`Predicted Intent: ${intent}, Confidence: ${confidence}`);
+      if (intent === 'job_post' && confidence > 0.5) {
+
+        await TTS_module.getMsg("Sure! I can help you post a job. Let's get started.");
+
+        let jobData: any = {};
+
+        for (let i = 0; i < scripts.job_post.length; i++) {
+
+          const question = scripts.job_post[i];
+
+          // 1️⃣ Show question in UI
+          setResult(prev => prev + `\nAI: ${question}`);
+          console.log("Asking:", question);
+
+          // 2️⃣ Speak question
+          await TTS_module.getMsg(question);
+
+          // 3️⃣ Start listening
+          // await STT_module.startListening?.();
+
+          // 4️⃣ Wait for answer
+          let answer = await STT_module.getSTTResult();
+          await STT_module.speechStop();
+
+          // 5️⃣ Retry if empty
+          if (!answer || answer.trim() === "") {
+            i--; // repeat same question
+            await TTS_module.getMsg("I didn't catch that. Please say that again.");
+            continue;
+          }
+
+          console.log("User Answer:", answer);
+          setResult(prev => prev + `\nYou: ${answer}`);
+
+          // 6️⃣ Process answer
+          jobData[`question_${i}`] = answer;
+
+          // Example custom logic:
+          // if (i === 0) jobData.title = answer;
+          // if (i === 1) jobData.description = answer;
+        }
+
+        console.log("Final Collected Job Data:", jobData);
+
+        await TTS_module.getMsg("Your job has been created successfully!");
+
+        // You can now call API:
+        // await createJob(jobData);
+      }
+      else if (confidence > 0.5) {
         if (intent === 'list_nearby_worker') {
           setResult(prev => prev + "\nFetching nearby workers...");
-          TTS_module.getMsg("Fetching nearby workers...");
+          await TTS_module.getMsg("Fetching nearby workers...");
           router.push("/client/WorkerRankingScreen");
-        } else if (intent === 'job_post') {
-          TTS_module.getMsg("\nSure! I can help you post a job. Let's get started with the details.");
-          for (let i = 0; i < scripts.job_post.length; i++) {
-            const question = scripts.job_post[i];
-            setResult(prev => prev + `\nAI: ${question}`);
-            await TTS_module.getMsg(question);
-            STT_module.speechStop();
-            const answer = await STT_module.getSTTResult();
-            setResult(prev => prev + `\nYou: ${answer}`);
-            STT_module.speechStop();
-          }
         }
       }
     } catch (err: any) {
@@ -40,19 +85,43 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   }
 
   useEffect(() => {
-    initModel()
-    handleSpeak();
+    const loadModel = async () => {
+      await initModel();
+      setIsConversationStarted(true);
+    };
+
+    loadModel();
+    const unloadModel = async () => {
+      await STT_module.speechStop();
+    }
     return () => {
-      STT_module.speechStop();
+      unloadModel();
     }
   }, [])
 
+
+  useEffect(() => {
+    if (isConversationStarted) {
+      handleSpeak();
+    }
+    const unloadModel = async () => {
+      await STT_module.speechStop();
+    }
+    return () => {
+      unloadModel();
+    }
+  }, [isConversationStarted])
+
+  const handleClose = async () => {
+    await STT_module.speechStop();
+    onClose();
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>AI Assistant</Text>
-        <TouchableOpacity onPress={() => { onClose(); STT_module.speechStop() }} style={styles.closeButton}>
+        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
       </View>
@@ -63,9 +132,9 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
           contentContainerStyle={styles.messagesContent}
         >
           <Text style={{ color: 'white', fontSize: 16, marginBottom: 10 }}>
-            Hello! I'm your AI assistant. How can I help you today?
+            Hello! How can I help you today?
           </Text>
-          <Text style={{ color: 'white', fontSize: 16, marginBottom: 10 }}> {speechText} = {result}</Text>
+          <Text style={{ color: 'white', fontSize: 16, marginBottom: 10 }}> {speechText}</Text>
         </ScrollView>
 
       </View>

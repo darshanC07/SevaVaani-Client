@@ -157,9 +157,21 @@ public class STT_module extends ReactContextBaseJavaModule implements Recognitio
                 msg = "Unknown error";
         }
 
-        if (sttPromise != null) {
-            sttPromise.reject("STT_ERROR", msg);
-            sttPromise = null;
+        if (errorCode == SpeechRecognizer.ERROR_NO_MATCH ||
+                errorCode == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
+
+            // Treat as empty input instead of error
+            if (sttPromise != null) {
+                sttPromise.resolve("");
+                sttPromise = null;
+            }
+
+        } else {
+
+            if (sttPromise != null) {
+                sttPromise.reject("STT_ERROR", "Error code: " + errorCode);
+                sttPromise = null;
+            }
         }
 
         if (speechRecognizer != null) {

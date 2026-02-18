@@ -29,30 +29,68 @@ public class TTS_module extends ReactContextBaseJavaModule {
         return "TTS_module";
     }
 
+    // @ReactMethod
+    // public void getMsg(String textToSpeak, Promise promise){
+    // try{
+    // if (promise != null) {
+    // promise.resolve("Speaking: " + textToSpeak);
+    // }
+    // if (textToSpeech != null && textToSpeak != null) {
+    // textToSpeech.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null);
+    // }
+    // } catch(Exception e){
+    // if (promise != null) {
+    // promise.reject(e);
+    // }
+    // }
+    // }
+
     @ReactMethod
-    public void getMsg(String textToSpeak, Promise promise){
-        try{
-            if (promise != null) {
-                promise.resolve("Speaking: " + textToSpeak);
-            }
-            if (textToSpeech != null && textToSpeak != null) {
-                textToSpeech.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null);
-            }
-        } catch(Exception e){
-            if (promise != null) {
-                promise.reject(e);
-            }
+    public void getMsg(String textToSpeak, Promise promise) {
+
+        if (textToSpeech == null) {
+            promise.reject("TTS_ERROR", "TTS not initialized");
+            return;
         }
+
+        String utteranceId = String.valueOf(System.currentTimeMillis());
+
+        textToSpeech.setOnUtteranceProgressListener(new android.speech.tts.UtteranceProgressListener() {
+
+            @Override
+            public void onStart(String utteranceId) {
+            }
+
+            @Override
+            public void onDone(String utteranceId) {
+                promise.resolve("done");
+            }
+
+            @Override
+            public void onError(String utteranceId) {
+                promise.reject("TTS_ERROR", "Speech failed");
+            }
+        });
+
+        Bundle params = new Bundle();
+        params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId);
+
+        textToSpeech.speak(textToSpeak,
+                TextToSpeech.QUEUE_FLUSH,
+                params,
+                utteranceId);
     }
 
     // @ReactMethod
     // public void getPhoneID(Promise response) {
-    //     try {
-    //         @SuppressLint("HardwareIds") String id = Settings.Secure.getString(reactContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-    //         response.resolve(id);
-    //     } catch (Exception e) {
-    //         response.reject("Error", e);
-    //     }
+    // try {
+    // @SuppressLint("HardwareIds") String id =
+    // Settings.Secure.getString(reactContext.getContentResolver(),
+    // Settings.Secure.ANDROID_ID);
+    // response.resolve(id);
+    // } catch (Exception e) {
+    // response.reject("Error", e);
+    // }
     // }
 
     private void initializeTextToSpeech() {

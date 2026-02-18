@@ -10,27 +10,23 @@ import android.speech.SpeechRecognizer;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.content.pm.PackageManager;
 
-import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.*;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class STT_module extends ReactContextBaseJavaModule implements RecognitionListener {
 
-    private static ReactApplicationContext reactContext;
+    private final ReactApplicationContext reactContext;
     private SpeechRecognizer speechRecognizer;
     private Intent speechIntent;
     private Promise sttPromise;
 
     public STT_module(ReactApplicationContext context) {
         super(context);
-        reactContext = context;
+        this.reactContext = context;
     }
 
     @NonNull
@@ -39,13 +35,56 @@ public class STT_module extends ReactContextBaseJavaModule implements Recognitio
         return "STT_module";
     }
 
+    // ================================
+    // INIT (Create once)
+    // ================================
     @ReactMethod
-    public void getSTTResult(Promise promise) {
+    public void initRecognizer(Promise promise) {
 
-        Activity currentActivity = getCurrentActivity();
+        reactContext.runOnUiQueueThread(() -> {
 
-        if (currentActivity == null) {
-            promise.reject("NO_ACTIVITY", "No activity found");
+            if (!SpeechRecognizer.isRecognitionAvailable(reactContext)) {
+                promise.reject("NOT_AVAILABLE", "Speech recognition not available");
+                return;
+            }
+
+            if (speechRecognizer != null) {
+                promise.resolve("Already initialized");
+                return;
+            }
+
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(reactContext);
+            speechRecognizer.setRecognitionListener(this);
+
+            speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE,
+                    Locale.getDefault());
+            speechIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
+            speechIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+
+            // speechIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 6000);
+            // speechIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 6000);
+            // speechIntent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 2000);
+
+            promise.resolve("Initialized");
+        });
+    }
+
+    // ================================
+    // START LISTENING
+    // ================================
+    @ReactMethod
+    public void startListening(Promise promise) {
+
+        if (speechRecognizer == null) {
+            promise.reject("NOT_INITIALIZED", "Call initRecognizer first");
+            return;
+        }
+
+        if (sttPromise != null) {
+            promise.reject("BUSY", "Already listening");
             return;
         }
 
@@ -55,50 +94,44 @@ public class STT_module extends ReactContextBaseJavaModule implements Recognitio
             return;
         }
 
-        if (sttPromise != null) {
-            promise.reject("STT_BUSY", "Speech recognition already running");
-            return;
-        }
-
         sttPromise = promise;
 
         reactContext.runOnUiQueueThread(() -> {
-            createRecognizer();
             speechRecognizer.startListening(speechIntent);
         });
     }
 
+    // ================================
+    // STOP LISTENING (No destroy)
+    // ================================
     @ReactMethod
-    public void speechStop(Promise promise) {
-
+    public void stopListening() {
         reactContext.runOnUiQueueThread(() -> {
-
             if (speechRecognizer != null) {
                 speechRecognizer.stopListening();
-                speechRecognizer.cancel();
-                speechRecognizer.destroy();
-                speechRecognizer = null;
             }
-
-            sttPromise = null;
-            promise.resolve("Stopped");
         });
     }
 
+    // ================================
+    // DESTROY (Call when leaving screen)
+    // ================================
     @ReactMethod
-    public void getDeviceLanguage(Promise promise) {
-        try {
-            String locale = Locale.getDefault().toString();
-            String language = Locale.getDefault().getLanguage();
-            String country = Locale.getDefault().getCountry();
-            String displayName = Locale.getDefault().getDisplayName();
-            String result = "Locale: " + locale + ", Language: " + language + ", Country: " + country + ", Display: "
-                    + displayName;
-            promise.resolve(result);
-        } catch (Exception e) {
-            promise.reject("ERROR", e.getMessage(), e);
-        }
+    public void destroyRecognizer() {
+
+        reactContext.runOnUiQueueThread(() -> {
+            if (speechRecognizer != null) {
+                speechRecognizer.destroy();
+                speechRecognizer = null;
+            }
+        });
+
+        sttPromise = null;
     }
+
+    // ================================
+    // CALLBACKS
+    // ================================
 
     @Override
     public void onReadyForSpeech(Bundle params) {
@@ -121,63 +154,11 @@ public class STT_module extends ReactContextBaseJavaModule implements Recognitio
     }
 
     @Override
-    public void onError(int errorCode) {
+    public void onPartialResults(Bundle partialResults) {
+    }
 
-        String msg;
-
-        switch (errorCode) {
-            case SpeechRecognizer.ERROR_AUDIO:
-                msg = "Audio error";
-                break;
-            case SpeechRecognizer.ERROR_CLIENT:
-                msg = "Client error";
-                break;
-            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                msg = "Insufficient permissions";
-                break;
-            case SpeechRecognizer.ERROR_NO_MATCH:
-                msg = "No voice detected";
-                break;
-            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                msg = "Speech timeout";
-                break;
-            case SpeechRecognizer.ERROR_NETWORK:
-                msg = "Network error";
-                break;
-            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                msg = "Network timeout";
-                break;
-            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                msg = "Recognizer busy";
-                break;
-            case SpeechRecognizer.ERROR_SERVER:
-                msg = "Server error";
-                break;
-            default:
-                msg = "Unknown error";
-        }
-
-        if (errorCode == SpeechRecognizer.ERROR_NO_MATCH ||
-                errorCode == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
-
-            // Treat as empty input instead of error
-            if (sttPromise != null) {
-                sttPromise.resolve("");
-                sttPromise = null;
-            }
-
-        } else {
-
-            if (sttPromise != null) {
-                sttPromise.reject("STT_ERROR", "Error code: " + errorCode);
-                sttPromise = null;
-            }
-        }
-
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-            speechRecognizer = null;
-        }
+    @Override
+    public void onEvent(int eventType, Bundle params) {
     }
 
     @Override
@@ -189,30 +170,28 @@ public class STT_module extends ReactContextBaseJavaModule implements Recognitio
             if (list != null && !list.isEmpty()) {
                 sttPromise.resolve(list.get(0));
             } else {
-                sttPromise.resolve("No speech detected");
+                sttPromise.resolve("");
             }
             sttPromise = null;
         }
     }
 
     @Override
-    public void onPartialResults(Bundle partialResults) {
-    }
+    public void onError(int errorCode) {
 
-    @Override
-    public void onEvent(int eventType, Bundle params) {
-    }
+        if (sttPromise != null) {
 
-    @Override
-    public void onCatalystInstanceDestroy() {
+            if (errorCode == SpeechRecognizer.ERROR_NO_MATCH ||
+                    errorCode == SpeechRecognizer.ERROR_SPEECH_TIMEOUT) {
 
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-            speechRecognizer = null;
+                sttPromise.resolve("");
+
+            } else {
+                sttPromise.reject("STT_ERROR", "Error code: " + errorCode);
+            }
+
+            sttPromise = null;
         }
-        sttPromise = null;
-
-        super.onCatalystInstanceDestroy();
     }
 
     private boolean hasPermission() {
@@ -229,23 +208,5 @@ public class STT_module extends ReactContextBaseJavaModule implements Recognitio
                     new String[] { android.Manifest.permission.RECORD_AUDIO },
                     1);
         }
-    }
-
-    private void createRecognizer() {
-
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-            speechRecognizer = null;
-        }
-
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(reactContext);
-        speechRecognizer.setRecognitionListener(this);
-
-        speechIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-
-        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-
-        speechIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
     }
 }

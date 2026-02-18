@@ -1,0 +1,10 @@
+{
+    "job_post" : [
+        "Oh wow..Great! I can help you with that. Please provide me with the details of the job you want to post. What type of work is it ? Plumbing, Electrical, Cleaning?", 
+        "Okay, I understand. Can you please provide me with a brief description of the job?",
+        "Got it. And where do you need this service? Please provide me with the location details.",
+        "Whats your budget range for this job? This will help us find the right workers for you.",
+        "What will be duration of this task? ",
+        "Do you have any specific requirements or preferences for the workers?"
+    ]
+}

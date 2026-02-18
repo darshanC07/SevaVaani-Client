@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, NativeModules, Alert } from 'react-native';
 import { initModel, predictIntent } from '../utils/ClassifierService';
-
+import { useRouter } from 'expo-router';
+import scripts from '../scripts'
 const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
-
+  const router = useRouter();
   const { TTS_module, STT_module } = NativeModules;
   const [speechText, setSpeechText] = useState("");
   const [result, setResult] = useState('');
@@ -12,8 +13,27 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
       const text = await STT_module.getSTTResult();
       console.log("STT Result:", text);
       setSpeechText(text);
+      STT_module.speechStop();
       const { intent, confidence } = predictIntent(text);
       setResult(`Intent: ${intent} (${(confidence * 100).toFixed(1)}%)`);
+      if (confidence > 0.5) {
+        if (intent === 'list_nearby_worker') {
+          setResult(prev => prev + "\nFetching nearby workers...");
+          TTS_module.getMsg("Fetching nearby workers...");
+          router.push("/client/WorkerRankingScreen");
+        } else if (intent === 'job_post') {
+          TTS_module.getMsg("\nSure! I can help you post a job. Let's get started with the details.");
+          for (let i = 0; i < scripts.job_post.length; i++) {
+            const question = scripts.job_post[i];
+            setResult(prev => prev + `\nAI: ${question}`);
+            await TTS_module.getMsg(question);
+            STT_module.speechStop();
+            const answer = await STT_module.getSTTResult();
+            setResult(prev => prev + `\nYou: ${answer}`);
+            STT_module.speechStop();
+          }
+        }
+      }
     } catch (err: any) {
       Alert.alert("STT Error", err?.message ?? String(err));
     }

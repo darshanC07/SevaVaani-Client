@@ -9,7 +9,7 @@ import {
   Alert
 } from 'react-native';
 import { initModel, predictIntent } from '../utils/ClassifierService';
-import { initExtractorModel, predictAnswer,loadVocab } from '../utils/Extractor';
+// import { initExtractorModel, predictAnswer,loadVocab } from '../utils/Extractor';
 
 import { useRouter } from 'expo-router';
 import scripts from '../scripts.json';
@@ -32,15 +32,16 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   const speakAndListen = async (question: string) => {
     try {
 
-      await STT_module.stopListening();
+      await STT_module.speechStop();
 
       await TTS_module.getMsg(question);
 
       await sleep(700); // allow TTS to fully finish
 
-      const response = await STT_module.startListening();
+      const response = await STT_module.getSTTResult();
 
-      await STT_module.stopListening();
+      await sleep(700);
+      // await STT_module.stopListening();
 
       return response || "";
 
@@ -140,17 +141,17 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
     const setup = async () => {
       await initModel();
-      await loadVocab();
-      await initExtractorModel();
-      await STT_module.initRecognizer(); 
+      // await loadVocab();
+      // await initExtractorModel();
+      // await STT_module.initRecognizer(); 
       setIsConversationStarted(true);
     };
 
     setup();
 
     return () => {
-      STT_module.stopListening();
-      STT_module.destroyRecognizer();
+      STT_module.speechStop();
+      // STT_module.destroyRecognizer();
     };
 
   }, []);
@@ -162,8 +163,8 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   }, [isConversationStarted]);
 
   const handleClose = async () => {
-    await STT_module.stopListening();
-    await STT_module.destroyRecognizer();
+    await STT_module.speechStop();
+    // await STT_module.destroyRecognizer();
     onClose();
   };
 

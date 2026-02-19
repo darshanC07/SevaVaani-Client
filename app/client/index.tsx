@@ -17,7 +17,7 @@ import NavBar from "../../components/NavBar";
 import { getUserId } from "../../utils/AsyncStorageUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchJobs } from "../../services/GlobalAPIs";
-
+import { initExtractorModel, predictAnswer,loadVocab } from '../../utils/Extractor';
 const Index = () => {
   const router = useRouter();
 
@@ -78,8 +78,12 @@ const Index = () => {
       setName(uname);
       setEmail(uemail);
       getJobData(userId);
+      
+      await loadVocab();
+      await initExtractorModel();
     }
     fetchUserId();
+    
   }, [])
 
 

@@ -21,6 +21,19 @@ const index = () => {
         await AsyncStorage.setItem("userId", response["user"].uid);
         await AsyncStorage.setItem("name", response["user"].name);
         await AsyncStorage.setItem("email", response["user"].email);
+        const authToken =
+          response?.token ??
+          response?.authToken ??
+          response?.access_token ??
+          response?.accessToken ??
+          response?.idToken ??
+          response?.id_token ??
+          response?.jwt;
+        if (authToken) {
+          await AsyncStorage.setItem("authToken", authToken);
+        } else {
+          console.warn("Login response did not include an auth token.");
+        }
         router.replace("/");
       } else {
         alert("Login failed: " + response["error"]);

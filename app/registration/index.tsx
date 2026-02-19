@@ -1,14 +1,14 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  Image,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View
+    Image,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -87,7 +87,7 @@ const index = () => {
               </Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.selectionContainer} onPress={() => router.push("registration/EnterMobile")}>
+          <TouchableOpacity style={styles.selectionContainer} onPress={() => router.push("/registration/EmailScreen?role=worker")}>
             <View style={styles.imgCircle}>
               <Image
                 source={require("../../assets/roles/worker.png")}
@@ -105,7 +105,7 @@ const index = () => {
         </View>
       </View>
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.continueButton} activeOpacity={0.9} onPress={() => router.push("registration/EnterMobile")}>
+        <TouchableOpacity style={styles.continueButton} activeOpacity={0.9} onPress={() => router.push("/registration/EnterMobile")}>
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
       </View>

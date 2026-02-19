@@ -1,12 +1,11 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import {
-    createAgoraRtcEngine,
     ChannelProfileType,
     ClientRoleType,
-    RtcConnection,
-    IRtcEngineEventHandler,
+    createAgoraRtcEngine,
     IRtcEngine,
+    RtcConnection
 } from 'react-native-agora';
 import { requestAudioPermission } from './permissions';
 
@@ -141,3 +140,8 @@ export const useInitializeAgora = () => {
         
     };
 };
+
+// Add default export for Expo Router
+export default function HooksPage() {
+  return null;
+}

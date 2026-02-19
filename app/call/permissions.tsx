@@ -19,3 +19,8 @@ export const  requestAudioPermission = async () => {
     console.warn(err);
   }
 };
+
+// Add default export for Expo Router
+export default function PermissionsPage() {
+  return null;
+}

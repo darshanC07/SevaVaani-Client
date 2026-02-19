@@ -1,22 +1,29 @@
-import BottomNavBar from "../../components/BottomNavBar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import BottomNavBar from "../../components/BottomNavBar";
 import NavBar from "../../components/NavBar";
-import { getUserId } from "../../utils/AsyncStorageUtils";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchJobs } from "../../services/GlobalAPIs";
+import { getUserId } from "../../utils/AsyncStorageUtils";
+
+interface Job {
+  job_id: string;
+  job_details: string;
+  posted_at: string;
+  status: string;
+}
 
 const Index = () => {
   const router = useRouter();
@@ -25,7 +32,7 @@ const Index = () => {
   const [name, setName] = useState<string | null>('');
   const [email, setEmail] = useState<string | null>('');
 
-  const [jobData, setJobData] = useState([]);
+  const [jobData, setJobData] = useState<Job[]>([]);
   const [isJobDataLoading, setIsJobDataLoading] = useState(false);
 
   const navImage = require("../../assets/Client_HomeScreen/Washing_man.png");
@@ -45,7 +52,7 @@ const Index = () => {
   //   };
   // }, []);
 
-  async function getJobData(userId) {
+  async function getJobData(userId: string) {
     setIsJobDataLoading(true);
     try {
     
@@ -77,16 +84,18 @@ const Index = () => {
       setUser(userId);
       setName(uname);
       setEmail(uemail);
-      getJobData(userId);
+      if (userId) {
+        getJobData(userId);
+      }
     }
     fetchUserId();
   }, [])
 
 
-  function timeAgo(isoTime) {
+  function timeAgo(isoTime: string) {
     const past = new Date(isoTime);
     const now = new Date();
-    const diff = now - past;
+    const diff = now.getTime() - past.getTime();
 
     const sec = Math.floor(diff / 1000);
     if (sec < 60) return `${sec} seconds ago`;
@@ -180,7 +189,11 @@ const Index = () => {
           <View style={styles.scrollView}>
             <Text style={styles.recentTitle}>My Recent Jobs</Text>
 
-            <ScrollView contentContainerStyle={{ flex: 1, paddingVertical: 10 }}>
+            <ScrollView 
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
               {isJobDataLoading ? <Text>Loading...</Text> :
                 jobData.length === 0 ? <View style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}><Text>No recent jobs found.</Text></View> : (
                   console.log("Rendering job data:", jobData),

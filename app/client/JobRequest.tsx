@@ -3,13 +3,13 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
@@ -75,7 +75,13 @@ const JobRequest = () => {
             <Text style={styles.bullet}>
               • Availability: Can start within 1 hour
             </Text>
-            <TouchableOpacity style={styles.chatBtn}>
+            <TouchableOpacity style={styles.chatBtn} onPress={() => router.push({
+              pathname: "/client/ChatScreen",
+              params: { 
+                workerId: "NDlBf2F83abhtYaqVUSk0RC49K73", 
+                workerName: "Worker" 
+              }
+            })}>
               <Text style={styles.chatText}>Chat with worker</Text>
             </TouchableOpacity>
             <View style={styles.actionRow}>

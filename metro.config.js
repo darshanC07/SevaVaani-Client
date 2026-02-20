@@ -5,4 +5,5 @@ const config = getDefaultConfig(__dirname);
 // Add 'gguf' to the list of asset extensions
 config.resolver.assetExts.push('gguf');
 config.resolver.assetExts.push('bin');
+config.resolver.assetExts.push('txt');
 module.exports = config;

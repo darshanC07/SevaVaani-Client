@@ -2,7 +2,10 @@ import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 
-import { File, Paths } from 'expo-file-system';
+// import { File, Paths } from 'expo-file-system';
+
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const modelJson = require('../assets/ie_model/model.json');
 
@@ -80,24 +83,30 @@ let vocabLoaded = false;
 const MAX_LEN = 128;
 
 export const initExtractorModel = async () => {
-    if (model) return;
+    console.log("loading model")
+    if (model) {
+        console.log("model already initialized")
+        return;
+    }
 
     await tf.ready();
-
+    await tf.setBackend('rn-webgl');
     model = await tf.loadGraphModel(
         bundleResourceIO(modelJson, modelWeights)
     );
 
     console.log("QA Model Loaded Successfully");
-    const answer = await predictAnswer("what is job title?","i want to post a job for fixing bathroom taps")
-    console.log("predicted answer : ",answer)
+    const answer = await predictAnswer("what is job title?", "i want to post a job for fixing bathroom taps")
+    console.log("predicted answer : ", answer)
 };
 
 export const loadVocab = async () => {
     if (vocabLoaded) return;
 
-    const vocabFile = new File(Paths.bundle, 'assets/ie_model/vocab.txt');
-    const vocabText = await vocabFile.text();
+    const asset = Asset.fromModule(require('../assets/ie_model/vocab.txt'));
+    await asset.downloadAsync();
+    const fileUri = asset.localUri || asset.uri;
+    const vocabText = await FileSystem.readAsStringAsync(fileUri);
 
     const tokens = vocabText.split('\n');
 

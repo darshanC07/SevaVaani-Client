@@ -10,24 +10,20 @@ import * as FileSystem from 'expo-file-system/legacy';
 const modelJson = require('../assets/ie_model/model.json');
 
 const modelWeights = [
-    require("../assets/ie_model/group1-shard1of18.bin"),
-    require("../assets/ie_model/group1-shard2of18.bin"),
-    require("../assets/ie_model/group1-shard3of18.bin"),
-    require("../assets/ie_model/group1-shard4of18.bin"),
-    require("../assets/ie_model/group1-shard5of18.bin"),
-    require("../assets/ie_model/group1-shard6of18.bin"),
-    require("../assets/ie_model/group1-shard7of18.bin"),
-    require("../assets/ie_model/group1-shard8of18.bin"),
-    require("../assets/ie_model/group1-shard9of18.bin"),
-    require("../assets/ie_model/group1-shard10of18.bin"),
-    require("../assets/ie_model/group1-shard11of18.bin"),
-    require("../assets/ie_model/group1-shard12of18.bin"),
-    require("../assets/ie_model/group1-shard13of18.bin"),
-    require("../assets/ie_model/group1-shard14of18.bin"),
-    require("../assets/ie_model/group1-shard15of18.bin"),
-    require("../assets/ie_model/group1-shard16of18.bin"),
-    require("../assets/ie_model/group1-shard17of18.bin"),
-    require("../assets/ie_model/group1-shard18of18.bin")
+    require("../assets/ie_model/group1-shard1of14.bin"),
+    require("../assets/ie_model/group1-shard2of14.bin"),
+    require("../assets/ie_model/group1-shard3of14.bin"),
+    require("../assets/ie_model/group1-shard4of14.bin"),
+    require("../assets/ie_model/group1-shard5of14.bin"),
+    require("../assets/ie_model/group1-shard6of14.bin"),
+    require("../assets/ie_model/group1-shard7of14.bin"),
+    require("../assets/ie_model/group1-shard8of14.bin"),
+    require("../assets/ie_model/group1-shard9of14.bin"),
+    require("../assets/ie_model/group1-shard10of14.bin"),
+    require("../assets/ie_model/group1-shard11of14.bin"),
+    require("../assets/ie_model/group1-shard12of14.bin"),
+    require("../assets/ie_model/group1-shard13of14.bin"),
+    require("../assets/ie_model/group1-shard14of14.bin")
 ];
 
 let model = null;
@@ -49,7 +45,7 @@ export const initExtractorModel = async () => {
     model = await tf.loadGraphModel(
         bundleResourceIO(modelJson, modelWeights)
     );
-
+    console.log("model inputs :", model.inputs)
     console.log("QA Model Loaded Successfully");
     const answer = await predictAnswer("what is job title?", "i want to post a job for fixing bathroom taps")
     console.log("predicted answer : ", answer)
@@ -152,8 +148,8 @@ export const predictAnswer = async (question, context) => {
     const maskTensor = tf.tensor([attentionMask], [1, MAX_LEN], 'int32');
 
     const outputs = await model.executeAsync({
-        input_ids: inputTensor,
-        attention_mask: maskTensor
+        "inputs": inputTensor,
+        "inputs_1": maskTensor
     });
 
     const startLogits = outputs[0].dataSync();

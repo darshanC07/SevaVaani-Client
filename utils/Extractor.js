@@ -47,7 +47,7 @@ export const initExtractorModel = async () => {
     );
     console.log("model inputs :", model.inputs)
     console.log("QA Model Loaded Successfully");
-    const answer = await predictAnswer("what is job title?", "i want to post a job for fixing bathroom taps")
+    const answer = await predictAnswer("update name to robin", "what is the name?")
     console.log("predicted answer : ", answer)
 };
 
@@ -147,7 +147,7 @@ export const predictAnswer = async (question, context) => {
     const inputTensor = tf.tensor([inputIds], [1, MAX_LEN], 'int32');
     const maskTensor = tf.tensor([attentionMask], [1, MAX_LEN], 'int32');
 
-    const outputs = await model.executeAsync({
+    const outputs = await model.execute({
         "inputs": inputTensor,
         "inputs_1": maskTensor
     });
@@ -170,6 +170,9 @@ export const predictAnswer = async (question, context) => {
         .trim();
 
     tf.dispose([inputTensor, maskTensor, outputs]);
-
+    console.log("startIndex:", startIndex);
+    console.log("endIndex:", endIndex);
+    console.log("start token:", idToToken[inputIds[startIndex]]);
+    console.log("end token:", idToToken[inputIds[endIndex]]);
     return answer;
 };

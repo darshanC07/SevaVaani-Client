@@ -119,10 +119,6 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
         console.log("Final Job Data:", jobData);
       }
-
-      // ===============================
-      // OTHER INTENTS
-      // ===============================
       else if (confidence > 0.5) {
 
         if (intent === "list_nearby_worker") {

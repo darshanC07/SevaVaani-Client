@@ -10,7 +10,9 @@ import {
 } from 'react-native';
 import { initModel, predictIntent } from '../utils/ClassifierService';
 // import { initExtractorModel, predictAnswer,loadVocab } from '../utils/Extractor';
-
+import {
+  LoaderKitView
+} from 'react-native-loader-kit';
 import { useRouter } from 'expo-router';
 import scripts from '../scripts.json';
 
@@ -18,7 +20,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
   const router = useRouter();
   const { TTS_module, STT_module } = NativeModules;
-
+  const [isListening, setIsListening] = useState(false);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const [speechText, setSpeechText] = useState("");
   const [result, setResult] = useState("");
@@ -34,15 +36,18 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
       await STT_module.speechStop();
 
+      setIsListening(false)
       await TTS_module.getMsg(question);
 
       await sleep(700); // allow TTS to fully finish
 
+      setIsListening(true)
       const response = await STT_module.getSTTResult();
 
       await sleep(700);
       // await STT_module.stopListening();
 
+      setIsListening(false)
       return response || "";
 
     } catch (error: any) {
@@ -192,6 +197,17 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
             {result}
           </Text>
         </ScrollView>
+        {
+          isListening && (
+            <View style={{backgroundColor : 'white',paddingHorizontal : 10,justifyContent : 'center',alignItems : 'center',borderRadius : 10,alignSelf : 'center',marginBottom : 10,position : 'absolute',bottom : 5}}>
+              <LoaderKitView
+                style={{ width: 30, height: 30 }}
+                name={'BallPulse'}
+                animationSpeedMultiplier={1.0} // speed up/slow down animation, default: 1.0, larger is faster
+                color={'blue'} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
+              />
+            </View>)
+        }
       </View>
     </View>
   );

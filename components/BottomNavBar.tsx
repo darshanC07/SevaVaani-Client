@@ -1,13 +1,44 @@
 import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform, NativeModules, Alert } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import AIChatOverlay from "./AIChatOverlay";
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
+import {
+  LoaderKitView
+} from 'react-native-loader-kit';
+import LongPressMessageWindow from "./LongPressMessageWindow";
 
 const BottomNavBar = () => {
   const router = useRouter();
   const [showOverlay, setShowOverlay] = useState(false);
   const contextObj = useContext(GlobalStatesContext);
+  const [isLongPressed, setIsLongPressed] = useState(false);
+  const [intent, setIntent] = useState("");
+  const [intentConfidence, setIntentConfidence] = useState(0);
+  const handleLongPress = async () => {
+    if (!contextObj.isIemodelLoaded) {
+      Alert.alert("Processing", "The assistant is still loading. Please wait a moment and try again.");
+      return;
+    }
+    setIsLongPressed(true);
+  }
+
+  const handleIntent = async () => {
+    if(intent === "list_nearby_worker" || intent === "ranking_workers") {
+      router.push('/client/WorkerRankingScreen');
+    } else if (intent === "view_profile") {
+      router.push('/client/Profile');
+    } else if (intent === "job_post") {
+      router.push('/client/PostNewJob');
+    }
+
+  }
+
+  useEffect(()=>{
+      if (intent.length!=0 && intentConfidence > 0.1) {
+        handleIntent();
+      }
+  },[intent, intentConfidence])
 
   return (
     <View style={styles.bg}>
@@ -41,7 +72,7 @@ const BottomNavBar = () => {
           alignItems: 'center'
         }}
         onPress={() => {
-          if (contextObj.iemodel == null) {
+          if (!contextObj.isIemodelLoaded) {
             Alert.alert("Processing", "The assistant is still loading. Please wait a moment and try again.");
             return;
           } else {
@@ -49,7 +80,12 @@ const BottomNavBar = () => {
           }
         }
         }
-      // onPress={handleSpeak}
+        onLongPress={handleLongPress}
+        onPressOut={() => {
+          if (isLongPressed) {
+            setIsLongPressed(false);
+          }
+        }}
       >
         <Image
           source={require("../assets/BottomNavBar/Microphone.png")}
@@ -81,6 +117,7 @@ const BottomNavBar = () => {
         /><Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Profile</Text>
       </TouchableOpacity>
 
+      {isLongPressed && <LongPressMessageWindow intentSetter={setIntent} confidenceSetter={setIntentConfidence}/>}
     </View>
   );
 };

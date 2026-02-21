@@ -81,6 +81,29 @@ public class TTS_module extends ReactContextBaseJavaModule {
                 utteranceId);
     }
 
+    @ReactMethod
+    public void stopSpeech(Promise promise) {
+        try {
+            if (textToSpeech != null) {
+                textToSpeech.stop();
+                promise.resolve("stopped");
+            } else {
+                promise.reject("TTS_ERROR", "TTS not initialized");
+            }
+        } catch (Exception e) {
+            promise.reject("TTS_ERROR", e);
+        }
+    }
+
+    @ReactMethod
+    public void shutdown() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+            textToSpeech = null;
+        }
+    }
+
     // @ReactMethod
     // public void getPhoneID(Promise response) {
     // try {

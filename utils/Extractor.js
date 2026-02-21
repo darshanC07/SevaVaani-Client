@@ -1,9 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
-
 // import { File, Paths } from 'expo-file-system';
-
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
 
@@ -30,7 +28,6 @@ let model = null;
 let vocab = {};
 let idToToken = {};
 let vocabLoaded = false;
-
 const MAX_LEN = 128;
 
 export const initExtractorModel = async () => {
@@ -47,8 +44,7 @@ export const initExtractorModel = async () => {
     );
     console.log("model inputs :", model.inputs)
     console.log("QA Model Loaded Successfully");
-    const answer = await predictAnswer("update name to robin", "what is the name?")
-    console.log("predicted answer : ", answer)
+
 };
 
 export const loadVocab = async () => {
@@ -70,86 +66,131 @@ export const loadVocab = async () => {
     vocabLoaded = true;
     console.log("Vocab Loaded");
 };
+const wordpieceTokenize = (token) => {
+    if (vocab[token] !== undefined) {
+        return [token];
+    }
 
-const wordpieceTokenize = (word) => {
-    if (vocab[word] !== undefined) return [word];
-
-    let tokens = [];
+    const chars = token.split("");
     let start = 0;
+    const subTokens = [];
 
-    while (start < word.length) {
-        let end = word.length;
+    while (start < chars.length) {
+        let end = chars.length;
         let found = null;
 
         while (start < end) {
-            let subword = word.slice(start, end);
-            if (start > 0) subword = "##" + subword;
+            let substr = chars.slice(start, end).join("");
+            if (start > 0) {
+                substr = "##" + substr;
+            }
 
-            if (vocab[subword] !== undefined) {
-                found = subword;
+            if (vocab[substr] !== undefined) {
+                found = substr;
                 break;
             }
-            end--;
+            end -= 1;
         }
 
-        if (!found) return ["[UNK]"];
+        if (found === null) {
+            return ["[UNK]"];
+        }
 
-        tokens.push(found);
+        subTokens.push(found);
         start = end;
     }
 
-    return tokens;
+    return subTokens;
 };
 
+const basicTokenize = (text) => {
+    text = text.toLowerCase();
 
-const tokenize = (question, context) => {
-    question = question.toLowerCase();
-    context = context.toLowerCase();
+    // Separate punctuation
+    text = text.replace(/([!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~])/g, " $1 ");
 
-    let tokens = ["[CLS]"];
+    // Remove extra spaces
+    text = text.replace(/\s+/g, " ").trim();
 
-    question.split(/\s+/).forEach(word => {
-        tokens.push(...wordpieceTokenize(word));
+    return text.length ? text.split(" ") : [];
+};
+
+export const encode = (question, context) => {
+    if (!vocabLoaded) {
+        throw new Error("Vocab not loaded");
+    }
+
+    const qTokens = basicTokenize(question);
+    const cTokens = basicTokenize(context);
+
+    let tokens = [];
+    let tokenTypeIds = [];
+
+    // [CLS]
+    tokens.push("[CLS]");
+    tokenTypeIds.push(0);
+
+    // Question
+    qTokens.forEach(word => {
+        const wp = wordpieceTokenize(word);
+        wp.forEach(sub => {
+            tokens.push(sub);
+            tokenTypeIds.push(0);
+        });
     });
 
+    // [SEP]
     tokens.push("[SEP]");
+    tokenTypeIds.push(0);
 
-    context.split(/\s+/).forEach(word => {
-        tokens.push(...wordpieceTokenize(word));
+    // Context
+    cTokens.forEach(word => {
+        const wp = wordpieceTokenize(word);
+        wp.forEach(sub => {
+            tokens.push(sub);
+            tokenTypeIds.push(1);
+        });
     });
 
+    // [SEP]
     tokens.push("[SEP]");
+    tokenTypeIds.push(1);
 
+    // Convert to IDs
     let inputIds = tokens.map(t => vocab[t] ?? vocab["[UNK]"]);
     let attentionMask = inputIds.map(() => 1);
 
     if (inputIds.length > MAX_LEN) {
         inputIds = inputIds.slice(0, MAX_LEN);
         attentionMask = attentionMask.slice(0, MAX_LEN);
+        tokenTypeIds = tokenTypeIds.slice(0, MAX_LEN);
     }
 
     while (inputIds.length < MAX_LEN) {
-        inputIds.push(vocab["[PAD]"] ?? 0);
+        inputIds.push(vocab["[PAD]"]);
         attentionMask.push(0);
+        tokenTypeIds.push(0);
     }
 
-    return { inputIds, attentionMask };
+    return { inputIds, attentionMask, tokenTypeIds, tokens };
 };
-
 
 export const predictAnswer = async (question, context) => {
 
     if (!model) throw new Error("Model not loaded");
     if (!vocabLoaded) throw new Error("Vocab not loaded");
-
-    const { inputIds, attentionMask } = tokenize(question, context);
+    // const { inputIds, attentionMask, tokenTypeIds } = tokenize(question, context);
+    const { inputIds, attentionMask, tokenTypeIds } =
+        encode(question, context);
 
     const inputTensor = tf.tensor([inputIds], [1, MAX_LEN], 'int32');
     const maskTensor = tf.tensor([attentionMask], [1, MAX_LEN], 'int32');
+    const tokenTypeTensor = tf.tensor([tokenTypeIds], [1, MAX_LEN], 'int32');
 
     const outputs = await model.execute({
-        "inputs": inputTensor,
-        "inputs_1": maskTensor
+        inputs: inputTensor,
+        inputs_1: maskTensor,
+        inputs_2: tokenTypeTensor
     });
 
     const startLogits = outputs[0].dataSync();
@@ -169,7 +210,7 @@ export const predictAnswer = async (question, context) => {
         .replace(/\[CLS\]|\[SEP\]|\[PAD\]/g, "")
         .trim();
 
-    tf.dispose([inputTensor, maskTensor, outputs]);
+    tf.dispose([inputTensor, maskTensor, tokenTypeTensor, outputs]);
     console.log("startIndex:", startIndex);
     console.log("endIndex:", endIndex);
     console.log("start token:", idToToken[inputIds[startIndex]]);

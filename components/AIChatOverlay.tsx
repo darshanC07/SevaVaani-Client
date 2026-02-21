@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -23,12 +23,12 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   const { TTS_module, STT_module } = NativeModules;
   const [isListening, setIsListening] = useState(false);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
-  const [speechText, setSpeechText] = useState("");
-  const [result, setResult] = useState("");
   const scrollviewref = useRef<ScrollView>(null)
   const [messages, setMessages] = useState<
     { id: number; text: string; sender: "ai" | "user" }[]
   >([]);
+
+  const isActiveRef = useRef(true);
 
   const sleep = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms));
@@ -64,20 +64,18 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
-  // ===============================
-  // MAIN CONVERSATION
-  // ===============================
   const handleConversation = async () => {
     try {
 
       let text = await speakAndListen(
         "Hello! How can I help you today?"
       );
-
+      if (!isActiveRef.current) return;
       if (!text) {
         text = await speakAndListen(
           "I didn't catch that. Please say that again."
         );
+        if (!isActiveRef.current) return;
       }
 
       // setSpeechText(text);
@@ -85,11 +83,8 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
       const { intent, confidence } = predictIntent(text);
 
-      setResult(`Intent: ${intent} (${(confidence * 100).toFixed(1)}%)`);
+      console.log(`Intent: ${intent} (${(confidence * 100).toFixed(1)}%)`);
 
-      // ===============================
-      // JOB POST FLOW
-      // ===============================
       if (intent === "job_post" && confidence > 0.5) {
 
         await TTS_module.getMsg(
@@ -101,14 +96,14 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         let jobData: any = {};
 
         for (let i = 0; i < scripts.job_post.length; i++) {
-
+          if (!isActiveRef.current) return;
           const question = scripts.job_post[i];
 
           // setResult(prev => prev + `\nAI: ${question}`);
           addMessage(question, "ai");
 
           let answer = await speakAndListen(question);
-
+          if (!isActiveRef.current) return;
           if (!answer.trim()) {
             await TTS_module.getMsg(
               "I didn't catch that. Please say that again."
@@ -175,7 +170,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   useEffect(() => {
 
     const setup = async () => {
-      await initModel();
+      // await initModel();
       // await loadVocab();
       // await initExtractorModel();
       // await STT_module.initRecognizer(); 
@@ -186,8 +181,10 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
     setup();
 
     return () => {
+      isActiveRef.current = false;
       STT_module.speechStop();
-      // STT_module.destroyRecognizer();
+      TTS_module.stopSpeech();
+      // TTS_module.shutdown();
     };
 
   }, []);
@@ -199,8 +196,14 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   }, [isConversationStarted]);
 
   const handleClose = async () => {
-    await STT_module.speechStop();
-    // await STT_module.destroyRecognizer();
+    isActiveRef.current = false;
+    try {
+      await STT_module.speechStop();
+      await TTS_module.stopSpeech();
+    } catch (e) {
+      console.log(e);
+    }
+
     onClose();
   };
 
@@ -238,7 +241,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
                     : styles.aiBubble,
                 ]}
               >
-                <Text style={{fontSize: 11,fontWeight : 'bold',textAlign : msg.sender==="ai"?'left' : "right"}}>{msg.sender==="ai"?"Assistant" : "You"}</Text>
+                <Text style={{ fontSize: 11, fontWeight: 'bold', textAlign: msg.sender === "ai" ? 'left' : "right" }}>{msg.sender === "ai" ? "Assistant" : "You"}</Text>
                 <Text style={styles.messageText}>{msg.text}</Text>
               </View>
             </View>
@@ -246,7 +249,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         </ScrollView>
         {
           isListening && (
-            <View style={{ backgroundColor: 'white', paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', borderRadius: 10, alignSelf: 'center', marginBottom: 10, position: 'absolute', bottom: 5}}>
+            <View style={{ backgroundColor: 'white', paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', borderRadius: 10, alignSelf: 'center', marginBottom: 10, position: 'absolute', bottom: 5 }}>
               <LoaderKitView
                 style={{ width: 30, height: 30 }}
                 name={'BallPulse'}

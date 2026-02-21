@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import {
   View,
   Text,
@@ -25,13 +25,20 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const [speechText, setSpeechText] = useState("");
   const [result, setResult] = useState("");
+  const scrollviewref = useRef<ScrollView>(null)
+  const [messages, setMessages] = useState<
+    { id: number; text: string; sender: "ai" | "user" }[]
+  >([]);
 
   const sleep = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms));
 
-  // ===============================
-  // SAFE SPEAK + LISTEN
-  // ===============================
+  const addMessage = (text: string, sender: "ai" | "user") => {
+    setMessages(prev => [
+      ...prev,
+      { id: Date.now() + Math.random(), text, sender }
+    ]);
+  };
   const speakAndListen = async (question: string) => {
     try {
 
@@ -73,7 +80,8 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         );
       }
 
-      setSpeechText(text);
+      // setSpeechText(text);
+      addMessage(text, "user");
 
       const { intent, confidence } = predictIntent(text);
 
@@ -96,7 +104,8 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
           const question = scripts.job_post[i];
 
-          setResult(prev => prev + `\nAI: ${question}`);
+          // setResult(prev => prev + `\nAI: ${question}`);
+          addMessage(question, "ai");
 
           let answer = await speakAndListen(question);
 
@@ -109,7 +118,8 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
             continue;
           }
 
-          setResult(prev => prev + `\nYou: ${answer}`);
+          // setResult(prev => prev + `\nYou: ${answer}`);
+          addMessage(answer, "user");
 
           switch (i) {
             case 0:
@@ -170,6 +180,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
       // await initExtractorModel();
       // await STT_module.initRecognizer(); 
       setIsConversationStarted(true);
+      addMessage("Hello! How can I help you today?", "ai");
     };
 
     setup();
@@ -206,20 +217,36 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         <ScrollView
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContent}
+          ref={scrollviewref}
+          onContentSizeChange={() => scrollviewref.current?.scrollToEnd({ animated: true })}
         >
-          <Text style={styles.text}>
-            Hello! How can I help you today?
-          </Text>
-          <Text style={styles.text}>
-            {speechText}
-          </Text>
-          <Text style={styles.text}>
-            {result}
-          </Text>
+          {messages.map((msg) => (
+            <View
+              key={msg.id}
+              style={[
+                styles.messageRow,
+                msg.sender === "user"
+                  ? styles.userRow
+                  : styles.aiRow,
+              ]}
+            >
+              <View
+                style={[
+                  styles.messageBubble,
+                  msg.sender === "user"
+                    ? styles.userBubble
+                    : styles.aiBubble,
+                ]}
+              >
+                <Text style={{fontSize: 11,fontWeight : 'bold',textAlign : msg.sender==="ai"?'left' : "right"}}>{msg.sender==="ai"?"Assistant" : "You"}</Text>
+                <Text style={styles.messageText}>{msg.text}</Text>
+              </View>
+            </View>
+          ))}
         </ScrollView>
         {
           isListening && (
-            <View style={{ backgroundColor: 'white', paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', borderRadius: 10, alignSelf: 'center', marginBottom: 10, position: 'absolute', bottom: 5 }}>
+            <View style={{ backgroundColor: 'white', paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', borderRadius: 10, alignSelf: 'center', marginBottom: 10, position: 'absolute', bottom: 5}}>
               <LoaderKitView
                 style={{ width: 30, height: 30 }}
                 name={'BallPulse'}
@@ -236,6 +263,41 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 export default AIChatOverlay;
 
 const styles = StyleSheet.create({
+  messageRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+
+  userRow: {
+    justifyContent: "flex-end",
+  },
+
+  aiRow: {
+    justifyContent: "flex-start",
+  },
+
+  messageBubble: {
+    maxWidth: "75%",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 15,
+  },
+
+  userBubble: {
+    backgroundColor: "#ffffff",
+    borderTopRightRadius: 0,
+  },
+
+  aiBubble: {
+    // backgroundColor: "#2E3BBF",
+    backgroundColor: "white",
+    borderTopLeftRadius: 0,
+  },
+
+  messageText: {
+    fontSize: 16,
+    color: "#000",
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -263,7 +325,7 @@ const styles = StyleSheet.create({
   },
   overlayContainer: {
     flex: 1,
-    backgroundColor: '#4560F4',
+    backgroundColor: '#5f76f5',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'white',

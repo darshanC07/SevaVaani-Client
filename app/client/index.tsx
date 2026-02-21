@@ -79,14 +79,12 @@ const Index = () => {
       setEmail(uemail);
       getJobData(userId);
 
-      await loadVocab();
-      await initExtractorModel();
-      // const answer = await predictAnswer("What is the new address?",
-      //   "update my address to mumbai kurla west")
+      // const answer = await predictAnswer("What is the job description?",
+      //   "My bathroom taps are leaking and I need someone to fix them")
       // console.log("predicted answer : ", answer)
-      const answer = await predictAnswer("What is the job title?",
-         "i want to post a job for fixing bathroom taps")
-       console.log("predicted answer : ", answer)
+      // const answer = await predictAnswer("What is the job title?",
+      //    "i want to post a job for fixing bathroom taps")
+      //  console.log("predicted answer : ", answer)
     }
     fetchUserId();
 

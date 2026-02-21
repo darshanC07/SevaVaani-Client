@@ -1,5 +1,5 @@
 import { Redirect } from "expo-router";
-import {  useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { startBackgroundLocation } from "./_layout";
 import EventSource from "react-native-sse";
 import { BASE_URL } from "@/services/GlobalAPIs";
@@ -7,11 +7,17 @@ import { getUserId } from "@/utils/AsyncStorageUtils";
 import { useRouter } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "react-native";
+import { initExtractorModel, loadVocab } from "@/utils/Extractor";
 
 export default function Index() {
   const router = useRouter();
   const [user, setUser] = useState<string | null>(null);
   const esRef = useRef<EventSource>(null);
+
+  async function loadIEModel() {
+    await loadVocab();
+    await initExtractorModel();
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -89,9 +95,10 @@ export default function Index() {
 
     };
 
+
     startBackgroundLocation();
     initSSE();
-
+    loadIEModel()
     // return () => {
     //   isMounted = false;
     //   if (esRef.current) {
@@ -126,9 +133,9 @@ export default function Index() {
   // return <Redirect href="/rooms/" />;
   // return <Redirect href="/AppWriteOTP" />;
   return (
-    <SafeAreaProvider style={{ flex: 1 , backgroundColor : '#4560F4'}}>
-      <SafeAreaView style={{ flex: 1,justifyContent:'center', alignItems:'center' }}>
-        <Text style={{ color: 'white', fontSize: 30,fontWeight : 'bold' }}>SevaVaani</Text>
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: '#4560F4' }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: 'white', fontSize: 30, fontWeight: 'bold' }}>SevaVaani</Text>
       </SafeAreaView>
     </SafeAreaProvider>
   )

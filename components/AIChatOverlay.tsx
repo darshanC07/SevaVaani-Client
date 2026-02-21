@@ -15,6 +15,7 @@ import {
 } from 'react-native-loader-kit';
 import { useRouter } from 'expo-router';
 import scripts from '../scripts.json';
+import { predictAnswer } from '@/utils/Extractor';
 
 const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
@@ -110,7 +111,30 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
           setResult(prev => prev + `\nYou: ${answer}`);
 
-          jobData[`question_${i}`] = answer;
+          switch (i) {
+            case 0:
+              const jobTitle = await predictAnswer("What is the job title?", answer);
+              jobData["job_details"] = jobTitle;
+              break;
+            case 1:
+              // const jobDescription = await predictAnswer("What is the job description?", answer);
+              jobData["description"] = answer;
+              break;
+            case 2:
+              const jobLocation = await predictAnswer("What is the job location?", answer);
+              jobData["location"] = jobLocation;
+              break;
+            case 3:
+              const jobBudget = await predictAnswer("What is the job budget?", answer);
+              jobData["budget_max"] = jobBudget;
+              break;
+            case 4:
+              const jobDuration = await predictAnswer("What is the job duration?", answer);
+              jobData["duration"] = jobDuration;
+              break;
+            default:
+              jobData["special_note"] = answer;
+          }
         }
 
         await TTS_module.getMsg(
@@ -195,7 +219,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         </ScrollView>
         {
           isListening && (
-            <View style={{backgroundColor : 'white',paddingHorizontal : 10,justifyContent : 'center',alignItems : 'center',borderRadius : 10,alignSelf : 'center',marginBottom : 10,position : 'absolute',bottom : 5}}>
+            <View style={{ backgroundColor: 'white', paddingHorizontal: 10, justifyContent: 'center', alignItems: 'center', borderRadius: 10, alignSelf: 'center', marginBottom: 10, position: 'absolute', bottom: 5 }}>
               <LoaderKitView
                 style={{ width: 30, height: 30 }}
                 name={'BallPulse'}

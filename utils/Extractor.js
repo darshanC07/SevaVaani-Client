@@ -3,6 +3,7 @@ import '@tensorflow/tfjs-react-native';
 import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
+import { Alert } from 'react-native';
 
 const modelJson = require('../assets/ie_model/model.json');
 
@@ -130,18 +131,21 @@ export const encode = (question, context) => {
     console.log("Token count before padding:", tokens.length);
     return { inputIds, attentionMask, tokenTypeIds, tokens };
 };
+
+
 export async function predictAnswer(question, context) {
 
+    if(!model) return (Alert.alert("Processing","Please wait while we load models"));
     const inputs = encode(question, context);
 
-    const inputTensor = tf.tensor2d([inputs.inputIds], [1, MAX_LEN], 'int32');
-    const maskTensor = tf.tensor2d([inputs.attentionMask], [1, MAX_LEN], 'int32');
-    const typeTensor = tf.tensor2d([inputs.tokenTypeIds], [1, MAX_LEN], 'int32');
+    const inputTensor = tf.tensor2d([inputs.inputIds], [1, MAX_LEN], "int32");
+    const maskTensor = tf.tensor2d([inputs.attentionMask], [1, MAX_LEN], "int32");
+    const typeTensor = tf.tensor2d([inputs.tokenTypeIds], [1, MAX_LEN], "int32");
 
     const outputs = await model.execute({
-        "inputs": inputTensor,
-        "inputs_1": maskTensor,
-        "inputs_2": typeTensor
+        inputs: inputTensor,
+        inputs_1: maskTensor,
+        inputs_2: typeTensor,
     });
 
     const startTensor = outputs[0];
@@ -150,25 +154,40 @@ export async function predictAnswer(question, context) {
     const startLogits = Array.from(await startTensor.data());
     const endLogits = Array.from(await endTensor.data());
 
-    let start = startLogits.indexOf(Math.max(...startLogits));
-    let end = endLogits.indexOf(Math.max(...endLogits));
+    // 🔥 Joint span scoring (replace simple argmax)
+    let bestScore = -Infinity;
+    let bestStart = 0;
+    let bestEnd = 0;
 
-    if (end < start) {
-        end = start;
+    for (let i = 0; i < startLogits.length; i++) {
+      for (let j = i; j < Math.min(i + 20, endLogits.length); j++) {
+        const score = startLogits[i] + endLogits[j];
+        if (score > bestScore) {
+          bestScore = score;
+          bestStart = i;
+          bestEnd = j;
+        }
+      }
     }
 
-    const answerIds = inputs.inputIds.slice(start, end + 1);
+    // Use bestStart / bestEnd instead of single argmax
+    const answerIds = inputs.inputIds.slice(bestStart, bestEnd + 1);
 
     // 🔥 Manual decode
     let tokens = answerIds.map(id => idToToken[id] || "");
 
-    // Remove special tokens
     tokens = tokens.filter(t => t !== "[CLS]" && t !== "[SEP]" && t !== "[PAD]");
 
-    // Merge WordPiece tokens
-    let answer = tokens.join(" ");
-    answer = answer.replace(/ ##/g, "");
-    answer = answer.replace(/##/g, "");
+    let answer = "";
+    for (let i = 0; i < tokens.length; i++) {
+        const tok = tokens[i];
+        if (tok.startsWith("##")) {
+            answer += tok.replace("##", "");
+        } else {
+            if (answer.length > 0) answer += " ";
+            answer += tok;
+        }
+    }
 
     tf.dispose([inputTensor, maskTensor, typeTensor, startTensor, endTensor]);
 

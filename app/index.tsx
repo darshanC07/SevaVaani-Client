@@ -1,5 +1,5 @@
 import { Redirect } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { startBackgroundLocation } from "./_layout";
 import EventSource from "react-native-sse";
 import { BASE_URL } from "@/services/GlobalAPIs";
@@ -8,15 +8,19 @@ import { useRouter } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "react-native";
 import { initExtractorModel, loadVocab } from "@/utils/Extractor";
+import { GlobalStatesContext } from "@/contexts/GlobalContext";
+import { initModel } from "@/utils/ClassifierService";
 
 export default function Index() {
   const router = useRouter();
   const [user, setUser] = useState<string | null>(null);
   const esRef = useRef<EventSource>(null);
-
+  const contextObj = useContext(GlobalStatesContext);
   async function loadIEModel() {
+    await initModel();  //loading the intent classifier model
     await loadVocab();
     await initExtractorModel();
+    contextObj.setIeModel(true);
   }
 
   useEffect(() => {

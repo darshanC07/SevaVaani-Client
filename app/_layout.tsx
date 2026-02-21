@@ -90,7 +90,7 @@ export default function Layout() {
           name="login"
           options={{ headerShown: false }}
         />
-
+        
       </Stack>
     </GlobalStatesProvider>
   );

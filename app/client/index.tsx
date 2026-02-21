@@ -1,6 +1,6 @@
 import BottomNavBar from "../../components/BottomNavBar";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -18,8 +18,12 @@ import { getUserId } from "../../utils/AsyncStorageUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchJobs } from "../../services/GlobalAPIs";
 import { initExtractorModel, predictAnswer, loadVocab } from '../../utils/Extractor';
+import { GlobalStatesContext } from "@/contexts/GlobalContext";
+
 const Index = () => {
   const router = useRouter();
+
+  const contextObj = useContext(GlobalStatesContext);
 
   const [user, setUser] = useState<string | null>('');
   const [name, setName] = useState<string | null>('');

@@ -1,9 +1,12 @@
+import { GlobalStatesContext } from "@/contexts/GlobalContext";
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-react-native';
 import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system/legacy';
-import { Alert } from 'react-native';
+import { useContext } from "react";
+
+const contextObj = useContext(GlobalStatesContext);
 
 const modelJson = require('../assets/ie_model/model.json');
 
@@ -39,6 +42,7 @@ export const initExtractorModel = async () => {
     await tf.setBackend('rn-webgl');
     model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
     console.log("QA Model Loaded Successfully");
+    contextObj.setIeModel(model);
 };
 
 export const loadVocab = async () => {
@@ -135,7 +139,7 @@ export const encode = (question, context) => {
 
 export async function predictAnswer(question, context) {
 
-    if(!model) return (Alert.alert("Processing","Please wait while we load models"));
+    // if(!model) return (Alert.alert("Processing","Please wait while we load models"));
     const inputs = encode(question, context);
 
     const inputTensor = tf.tensor2d([inputs.inputIds], [1, MAX_LEN], "int32");

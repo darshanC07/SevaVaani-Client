@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import * as Location from "expo-location";
 import { Stack } from "expo-router";
-
+import { GlobalStatesProvider } from "../contexts/GlobalContext";
 import "../tasks/LocationTask";
 const LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
 
@@ -68,29 +68,30 @@ export default function Layout() {
 
 
   return (
-  <Stack>
-    <Stack.Screen name="index" options={{ headerShown: false }} />
-    <Stack.Screen name="OnBoarding1" options={{ headerShown: false }} />
-    <Stack.Screen name="OnBoarding2" options={{ headerShown: false }} />
-    <Stack.Screen name="OnBoarding3" options={{ headerShown: false }} />
-    <Stack.Screen
-      name="registration"
-      options={{ headerShown: false }}
-    />
-    <Stack.Screen
-      name="client"
-      options={{ headerShown: false }}
-    />
-    <Stack.Screen
-      name="call"
-      options={{ headerShown: false }}
-    />
-    <Stack.Screen
-      name="login"
-      options={{ headerShown: false }}
-    />
+    <GlobalStatesProvider>
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="OnBoarding1" options={{ headerShown: false }} />
+        <Stack.Screen name="OnBoarding2" options={{ headerShown: false }} />
+        <Stack.Screen name="OnBoarding3" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="registration"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="client"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="call"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="login"
+          options={{ headerShown: false }}
+        />
 
-  </Stack>
-
+      </Stack>
+    </GlobalStatesProvider>
   );
 }

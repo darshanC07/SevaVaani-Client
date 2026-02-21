@@ -1,12 +1,13 @@
 import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform, NativeModules, Alert } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useRouter } from "expo-router";
 import AIChatOverlay from "./AIChatOverlay";
+import { GlobalStatesContext } from "@/contexts/GlobalContext";
 
 const BottomNavBar = () => {
   const router = useRouter();
   const [showOverlay, setShowOverlay] = useState(false);
-  
+  const contextObj = useContext(GlobalStatesContext);
 
   return (
     <View style={styles.bg}>
@@ -39,8 +40,16 @@ const BottomNavBar = () => {
           justifyContent: 'center',
           alignItems: 'center'
         }}
-        onPress={() => setShowOverlay(true)}
-        // onPress={handleSpeak}
+        onPress={() => {
+          if (contextObj.iemodel == null) {
+            Alert.alert("Processing", "The assistant is still loading. Please wait a moment and try again.");
+            return;
+          } else {
+            setShowOverlay(true)
+          }
+        }
+        }
+      // onPress={handleSpeak}
       >
         <Image
           source={require("../assets/BottomNavBar/Microphone.png")}

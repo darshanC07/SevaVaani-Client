@@ -17,7 +17,7 @@ import NavBar from "../../components/NavBar";
 import { getUserId } from "../../utils/AsyncStorageUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchJobs } from "../../services/GlobalAPIs";
-import { initExtractorModel, predictAnswer,loadVocab } from '../../utils/Extractor';
+import { initExtractorModel, predictAnswer, loadVocab } from '../../utils/Extractor';
 const Index = () => {
   const router = useRouter();
 
@@ -78,12 +78,18 @@ const Index = () => {
       setName(uname);
       setEmail(uemail);
       getJobData(userId);
-      
+
       await loadVocab();
       await initExtractorModel();
+      // const answer = await predictAnswer("What is the new address?",
+      //   "update my address to mumbai kurla west")
+      // console.log("predicted answer : ", answer)
+      const answer = await predictAnswer("What is the job title?",
+         "i want to post a job for fixing bathroom taps")
+       console.log("predicted answer : ", answer)
     }
     fetchUserId();
-    
+
   }, [])
 
 
@@ -200,12 +206,12 @@ const Index = () => {
 
                       <View style={styles.jobFooter}>
                         <Text style={styles.jobStatus}>{job.status}</Text>
-                        <TouchableOpacity style={styles.viewRequestButton} 
-                        // onPress={() => router.push("/client/JobRequest")}
-                        onPress={() => router.push({
-                          pathname: "/client/ViewJob",
-                          params: { job: JSON.stringify(job) }
-                        })}
+                        <TouchableOpacity style={styles.viewRequestButton}
+                          // onPress={() => router.push("/client/JobRequest")}
+                          onPress={() => router.push({
+                            pathname: "/client/ViewJob",
+                            params: { job: JSON.stringify(job) }
+                          })}
                         >
                           <Text style={styles.viewRequest}>View</Text>
                         </TouchableOpacity>

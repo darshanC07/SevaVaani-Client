@@ -158,3 +158,75 @@ export const activityOnProposal = async (
     throw err;
   }
 };
+
+export const createChat = async (clientUid, workerUid) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/chat/create`, {
+      client_uid: clientUid,
+      worker_uid: workerUid,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Create chat error:", error);
+
+    throw error;
+  }
+};
+
+export const sendMessage = async (chatId, senderUid, recipientUid, message) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/chat/send`, {
+      chat_id: chatId,
+      sender_uid: senderUid,
+      recipient_uid: recipientUid,
+      message: message,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Send message error:", error);
+
+    throw error;
+  }
+};
+
+export const getMessages = async (chatId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/chat/${chatId}/messages`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Get messages error:", error);
+
+    throw error;
+  }
+};
+
+export const getMessagesSince = async (chatId, timestamp) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/chat/${chatId}/messages/since/${timestamp}`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Get messages since error:", error);
+
+    throw error;
+  }
+};
+
+export const updateLastSeen = async (userUid) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/chat/user/${userUid}/last_seen`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Update last seen error:", error);
+
+    throw error;
+  }
+};

@@ -2,7 +2,7 @@ import React, { createContext, useState } from "react";
 
 export const GlobalStatesContext = createContext({
   messages : [],
-  setMessages : ()=>{},
+  setMessages : ([messages])=>{},
   jobs : [],
   setJobs : ()=>{},
   isIemodelLoaded : false,

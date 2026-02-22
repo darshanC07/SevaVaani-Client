@@ -19,7 +19,7 @@ type MapContainerProps = {
 };
 
 
-const WorkerRankBar = ({ data, id ,userId,userName}) => {
+const WorkerRankBar = ({ data, id, userId, userName }) => {
     const [iconToggle, setIconToggle] = useState(false);
     const handlePress = () => {
         setIconToggle(true);
@@ -27,6 +27,12 @@ const WorkerRankBar = ({ data, id ,userId,userName}) => {
         setTimeout(() => {
             setIconToggle(false);
         }, 200);
+
+        router.push({
+            pathname: '/client/ChatScreen',
+            params: { clientId: userId, clientName: userName }
+        });
+
     };
     return (
         <View style={{
@@ -53,7 +59,7 @@ const WorkerRankBar = ({ data, id ,userId,userName}) => {
                 const workerId = data[0];
                 const response = await callUser(userId, userName, workerId);
                 console.log("Call User Response:", response);
-                
+
                 if (response["code"] == -1) {
                     Alert.alert('User offline', 'The recipient is offline, please try again after some time', [
                         {
@@ -61,14 +67,14 @@ const WorkerRankBar = ({ data, id ,userId,userName}) => {
                             onPress: () => console.log('OK Pressed'),
                         },
                     ]);
-                }else{
+                } else {
                     router.push({
-                    pathname: '/call/CallingScreen',
-                    params: {
-                        callee_uid: workerId,
-                        callee_name: data[2] || "Worker"
-                    }
-                });
+                        pathname: '/call/CallingScreen',
+                        params: {
+                            callee_uid: workerId,
+                            callee_name: data[2] || "Worker"
+                        }
+                    });
                 }
             }}>
                 <MaterialIcons name="call" size={24} color="green" />
@@ -140,7 +146,7 @@ const WorkerRankingScreen = () => {
     const [mode, setMode] = useState('list');
     let { height, width } = useWindowDimensions();
     height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
-    
+
     const [user, setUser] = useState<any>(null);
     const [name, setName] = useState<string | null>(null);
     const [nearByWorkersLoc, setNearbyWorkersLoc] = useState([]);
@@ -247,7 +253,7 @@ const WorkerRankingScreen = () => {
                                     <WorkerRankBar key={item.id} data={item} />
                                 ))} */}
                                 {nearByWorkersLoc.map((item, index) => (
-                                    <WorkerRankBar key={index} data={item} id={index} userId={user} userName={name}/>
+                                    <WorkerRankBar key={index} data={item} id={index} userId={user} userName={name} />
                                 ))}
                             </ScrollView>
                         ) : (mode === 'map' && clientLoc.lat !== 0 && clientLoc.long !== 0 ? <MapContainer NearByWorkersLocList={nearByWorkersLoc} UserLoc={clientLoc || { lat: 0, long: 0 }} /> : null)

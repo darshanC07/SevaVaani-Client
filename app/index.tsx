@@ -84,6 +84,12 @@ export default function Index() {
         }
       });
 
+      es.addEventListener("new_message", (event: any) => {
+        const data = JSON.parse(event.data);
+        console.log("Received new message event:", data.message);
+        contextObj.setMessages((prevMessages) => [...prevMessages, data.message]);
+      });
+
       es.addEventListener("connected", (event: any) => {
         const data = JSON.parse(event.data);
         console.log("event connected:", data);

@@ -10,6 +10,7 @@ export default function Layout() {
       <Stack.Screen name="PostNewJob" options={{headerShown: false}}/>
       <Stack.Screen name="Notifications" options={{ headerShown: false }} />
       <Stack.Screen name="ViewJob" options={{ headerShown: false }} />
+      <Stack.Screen name="ChatScreen" options={{ headerShown: false }} />
       {/* <Stack.Screen name="EnterMobile" options={{ headerShown: false }} />
       <Stack.Screen name="OTPScreen" options={{ headerShown: false }} />
       <Stack.Screen name="EmailScreen" options={{ headerShown: false }} /> */}

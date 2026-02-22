@@ -30,7 +30,7 @@ const WorkerRankBar = ({ data, id, userId, userName }) => {
 
         router.push({
             pathname: '/client/ChatScreen',
-            params: { clientId: userId, clientName: userName }
+            params: { workerId: data[0], workerName: data[2] }
         });
 
     };

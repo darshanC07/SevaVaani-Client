@@ -161,15 +161,17 @@ export const activityOnProposal = async (
 
 export const createChat = async (clientUid, workerUid) => {
   try {
+    console.log("Creating chat for clientUid:", clientUid);
+    console.log("Creating chat for workerUid:", workerUid);
     const response = await axios.post(`${BASE_URL}/chat/create`, {
       client_uid: clientUid,
       worker_uid: workerUid,
+      role: "client",
     });
 
     return response.data;
   } catch (error) {
     console.error("Create chat error:", error);
-
     throw error;
   }
 };

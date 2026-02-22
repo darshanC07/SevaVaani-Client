@@ -1,3 +1,4 @@
+import { GlobalStatesContext } from "@/contexts/GlobalContext";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -15,9 +16,8 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { createChat, getMessages, getMessagesSince, sendMessage, updateLastSeen } from "../../services/GlobalAPIs";
+import { createChat, getMessages, sendMessage } from "../../services/GlobalAPIs";
 import { getUserId } from "../../utils/AsyncStorageUtils";
-import { GlobalStatesContext } from "@/contexts/GlobalContext";
 
 interface Message {
   message_id: string;
@@ -60,8 +60,8 @@ const ChatScreen = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [currentUserId, setCurrentUserId] = useState('');
   const [chatId, setChatId] = useState('');
-  const [clientId, setClientId] = useState(params.clientId || '');
-  const [clientName, setClientName] = useState(params.clientName || 'Client');
+  const [workerId, setWorkerId] = useState(params.workerId || '');
+  const [workerName, setWorkerName] = useState(params.workerName || 'Worker');
   const [isLoading, setIsLoading] = useState(true);
   const [lastMessageTimestamp, setLastMessageTimestamp] = useState(0);
 
@@ -98,14 +98,14 @@ const ChatScreen = () => {
 
       setCurrentUserId(userId);
 
-      const actualClientId = clientId || 'mockClientId123';
-      setClientId(actualClientId);
+      // const actualWorkerId = workerId || 'mockworkerId123';
+      // setWorkerId(actualWorkerId);
 
       // updateLastSeen(userId).catch((error) => {
       //   console.error("Update last seen error:", error);
       // });
 
-      const chatResponse = await createChat(actualClientId, userId);
+      const chatResponse = await createChat(userId,workerId);
       const currentChatId = chatResponse.chat_id;
       setChatId(currentChatId);
 
@@ -148,13 +148,13 @@ const ChatScreen = () => {
   // };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !currentUserId || !clientId || !chatId) return;
+    if (!inputMessage.trim() || !currentUserId || !workerId || !chatId) return;
 
     try {
       const messageText = inputMessage.trim();
       setInputMessage('');
 
-      await sendMessage(chatId, currentUserId, clientId, messageText);
+      await sendMessage(chatId,currentUserId,workerId, messageText);
       // updateLastSeen(currentUserId).catch((error) => {
       //   console.error("Update last seen error:", error);
       // });
@@ -180,7 +180,7 @@ const ChatScreen = () => {
     <View style={isCurrentUser(item.from) ? styles.userMessageRow : styles.leftMessageRow}>
       {!isCurrentUser(item.from) && (
         <View style={styles.smallAvatar}>
-          <Text style={styles.smallAvatarText}>{clientName[0] || 'C'}</Text>
+          <Text style={styles.smallAvatarText}>{workerName[0] || 'C'}</Text>
         </View>
       )}
       <View style={isCurrentUser(item.from) ? styles.rightBubble : styles.leftBubble}>
@@ -218,10 +218,10 @@ const ChatScreen = () => {
           />
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{clientName[0] || 'C'}</Text>
+              <Text style={styles.avatarText}>{workerName[0] || 'C'}</Text>
             </View>
             <View>
-              <Text style={styles.username}>{clientName}</Text>
+              <Text style={styles.username}>{workerName}</Text>
               <View style={styles.onlineRow}>
                 <View style={styles.onlineDot} />
                 <Text style={styles.onlineText}>Online</Text>
@@ -429,4 +429,3 @@ const styles = StyleSheet.create({
     padding: 5,
   },
 });
-

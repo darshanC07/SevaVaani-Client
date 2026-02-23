@@ -20,6 +20,7 @@ public class ReactOnePackage implements ReactPackage {
 
         modules.add(new TTS_module(reactContext));
         modules.add(new STT_module(reactContext));
+        modules.add(new OTPRequester(reactContext));
 
         return modules;
     }

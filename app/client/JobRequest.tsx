@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   },
   horizontalLine: {
     height: 1,
-    width: "94%",
+    width: "90%",
     backgroundColor: "white",
     marginBottom: 10,
     alignSelf: "center",

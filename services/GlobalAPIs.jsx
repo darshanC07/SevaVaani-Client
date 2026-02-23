@@ -123,16 +123,6 @@ export const fetchJobs = async (userId) => {
   }
 };
 
-export const fetchWorkerDetails = async (WORKER_ID) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/worker/${WORKER_ID}`);
-    return response.data;
-  } catch (err) {
-    console.error("Failed to fetch worker details:", err);
-    throw err;
-  }
-};
-
 export const activityOnProposal = async (
   jobId,
   workerId,
@@ -155,6 +145,16 @@ export const activityOnProposal = async (
     return response.data;
   } catch (err) {
     console.error("Failed to perform activity on proposal:", err);
+    throw err;
+  }
+};
+
+export const fetchWorkerDetails = async (WORKER_ID, lang) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/${lang}/worker/${WORKER_ID}`);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch worker details:", err);
     throw err;
   }
 };

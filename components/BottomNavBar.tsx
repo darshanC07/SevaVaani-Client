@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform, NativeModules, Alert, Pressable } from "react-native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import AIChatOverlay from "./AIChatOverlay";
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
@@ -13,16 +13,9 @@ const BottomNavBar = () => {
   const [isLongPressed, setIsLongPressed] = useState(false);
   const [intent, setIntent] = useState("");
   const [intentConfidence, setIntentConfidence] = useState(0);
-  const [showLoading, setShowLoading] = useState(false);
+  // const showLoading = !contextObj.isIemodelLoaded;
+  const showLoading = false;
 
-
-  useEffect(() => {
-    if (!contextObj.isIemodelLoaded) {
-      setShowLoading(true);
-    } else {
-      setShowLoading(false);
-    }
-  }, [contextObj.isIemodelLoaded])
 
   const handleLongPress = async () => {
     if (!contextObj.isIemodelLoaded) {

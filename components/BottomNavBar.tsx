@@ -1,9 +1,10 @@
-import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform, NativeModules, Alert } from "react-native";
+import { Image, StyleSheet, Text, View, TouchableOpacity, Modal, Platform, NativeModules, Alert, Pressable } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import AIChatOverlay from "./AIChatOverlay";
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
 import LongPressMessageWindow from "./LongPressMessageWindow";
+import LoaderKitView from "react-native-loader-kit";
 
 const BottomNavBar = () => {
   const router = useRouter();
@@ -12,6 +13,17 @@ const BottomNavBar = () => {
   const [isLongPressed, setIsLongPressed] = useState(false);
   const [intent, setIntent] = useState("");
   const [intentConfidence, setIntentConfidence] = useState(0);
+  const [showLoading, setShowLoading] = useState(false);
+
+
+  useEffect(() => {
+    if (!contextObj.isIemodelLoaded) {
+      setShowLoading(true);
+    } else {
+      setShowLoading(false);
+    }
+  }, [contextObj.isIemodelLoaded])
+
   const handleLongPress = async () => {
     if (!contextObj.isIemodelLoaded) {
       Alert.alert("Processing", "The assistant is still loading. Please wait a moment and try again.");
@@ -21,7 +33,7 @@ const BottomNavBar = () => {
   }
 
   const handleIntent = async () => {
-    if(intent === "list_nearby_worker" || intent === "ranking_workers") {
+    if (intent === "list_nearby_worker" || intent === "ranking_workers") {
       router.push('/client/WorkerRankingScreen');
     } else if (intent === "view_profile") {
       router.push('/client/Profile');
@@ -31,11 +43,11 @@ const BottomNavBar = () => {
 
   }
 
-  useEffect(()=>{
-      if (intent.length!=0 && intentConfidence > 0.1) {
-        handleIntent();
-      }
-  },[intent, intentConfidence])
+  useEffect(() => {
+    if (intent.length != 0 && intentConfidence > 0.1) {
+      handleIntent();
+    }
+  }, [intent, intentConfidence])
 
   return (
     <View style={styles.bg}>
@@ -91,6 +103,32 @@ const BottomNavBar = () => {
       </TouchableOpacity>
 
       <Modal
+        transparent={true}
+        visible={showLoading}
+        animationType="fade"
+        onRequestClose={() => {
+          // console.log("attempt to close modal") 
+        }}
+      >
+        <Pressable
+          style={styles.loadingModalOverlay}
+          onPress={() => {
+            //  console.log("attempt to close modal")
+          }}
+        >
+          <View style={styles.modalView}>
+            <Text style={{ color: 'black', fontSize: 16 }}>Loading Assistant</Text>
+            <LoaderKitView
+              style={{ width: 50, height: 50 }}
+              name={"BallSpinFadeLoader"}
+              animationSpeedMultiplier={1.0} // speed up/slow down animation, default: 1.0, larger is faster
+              color={"blue"} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
+            />
+          </View>
+        </Pressable>
+      </Modal>
+
+      <Modal
         animationType="fade"
         transparent={true}
         visible={showOverlay}
@@ -114,7 +152,7 @@ const BottomNavBar = () => {
         /><Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Profile</Text>
       </TouchableOpacity>
 
-      {isLongPressed && <LongPressMessageWindow intentSetter={setIntent} confidenceSetter={setIntentConfidence}/>}
+      {isLongPressed && <LongPressMessageWindow intentSetter={setIntent} confidenceSetter={setIntentConfidence} />}
     </View>
   );
 };
@@ -132,6 +170,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
   },
+
   icon: {
     height: 30,
     width: 30,
@@ -141,5 +180,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  loadingModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Add a semi-transparent background
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 30,
+    gap: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });

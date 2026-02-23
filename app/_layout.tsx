@@ -3,6 +3,7 @@ import * as Location from "expo-location";
 import { Stack } from "expo-router";
 import { GlobalStatesProvider } from "../contexts/GlobalContext";
 import "../tasks/LocationTask";
+import '../i18n';
 const LOCATION_TASK = "BACKGROUND_LOCATION_TASK";
 
 

@@ -79,7 +79,7 @@ const PostNewJob = () => {
 
     try {
       // Get actual user ID from AsyncStorage
-      const userId = await getUserId();
+      const userId = await AsyncStorage.getItem("userId");
       console.log("Retrieved userId:", userId);
       if (!userId) {
         Alert.alert("Error", "User not authenticated. Please login again.");

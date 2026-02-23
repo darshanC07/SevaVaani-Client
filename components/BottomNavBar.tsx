@@ -3,9 +3,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import AIChatOverlay from "./AIChatOverlay";
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
-import {
-  LoaderKitView
-} from 'react-native-loader-kit';
 import LongPressMessageWindow from "./LongPressMessageWindow";
 
 const BottomNavBar = () => {

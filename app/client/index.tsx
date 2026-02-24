@@ -19,11 +19,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchJobs } from "../../services/GlobalAPIs";
 import { initExtractorModel, predictAnswer, loadVocab } from '../../utils/Extractor';
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
   const router = useRouter();
 
   const contextObj = useContext(GlobalStatesContext);
+
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language.toUpperCase();
 
   const [user, setUser] = useState<string | null>('');
   const [name, setName] = useState<string | null>('');
@@ -53,7 +57,7 @@ const Index = () => {
     setIsJobDataLoading(true);
     try {
 
-      const data = await fetchJobs(userId);
+      const data = await fetchJobs(userId,currentLanguage.toLocaleLowerCase());
       console.log("Raw job data response:", data);
       if (data) {
         console.log("Fetched job data:", data.jobs);
@@ -68,6 +72,10 @@ const Index = () => {
       setIsJobDataLoading(false);
     }
   }
+
+   useEffect(() => {
+    getJobData(user);
+  }, [currentLanguage])
 
   useEffect(() => {
     const fetchUserId = async () => {

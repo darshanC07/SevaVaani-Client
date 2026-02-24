@@ -16,6 +16,7 @@ import BottomNavBar from "../../components/BottomNavBar";
 import { activityOnProposal, fetchWorkerDetails } from "@/services/GlobalAPIs";
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
+import { useTranslation } from "react-i18next";
 const JobRequest = () => {
   const router = useRouter();
   let { request, requestId, jobId } = useLocalSearchParams();
@@ -31,27 +32,29 @@ const JobRequest = () => {
     experience: 0
   });
 
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language.toLocaleLowerCase();
 
   const [isSuccessModal, setSuccessModal] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
 
 
   async function handleConfirmWorker() {
-    try{
-      const res = await activityOnProposal(jobId,request.workerId, requestId,1);
+    try {
+      const res = await activityOnProposal(jobId, request.workerId, requestId, 1);
       console.log("Worker confirmation response:", res);
       setSuccessModal(true);
-    }catch(err){
+    } catch (err) {
       console.error("Error confirming worker:", err);
     }
   }
 
   async function handleRejectWorker() {
-    try{  
-      const res = await activityOnProposal(jobId,request.workerId, requestId,0);
+    try {
+      const res = await activityOnProposal(jobId, request.workerId, requestId, 0);
       console.log("Worker rejection response:", res);
       setShowErrorAlert(true)
-    }catch(err){
+    } catch (err) {
       console.error("Error rejecting worker:", err);
     }
   }
@@ -59,7 +62,7 @@ const JobRequest = () => {
   async function getUserDetails(uid) {
     try {
       console.log("Fetching details for user ID:", uid);
-      const workerData = await fetchWorkerDetails(uid);
+      const workerData = await fetchWorkerDetails(uid,currentLanguage);
       console.log("Worker details response:", workerData);
       setWorker(workerData.worker);
     } catch (error) {
@@ -152,7 +155,7 @@ const JobRequest = () => {
       </View>
       <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Request Accepted." handleOk={() => {
         setSuccessModal(false);
-        router.push({pathname : "/client/ViewJob",params: { jobId: jobId }});
+        router.push({ pathname: "/client/ViewJob", params: { jobId: jobId } });
       }} />
       <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message="Request Rejected." />
       <BottomNavBar />

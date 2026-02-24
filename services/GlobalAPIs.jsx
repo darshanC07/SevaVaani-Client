@@ -112,10 +112,12 @@ export const postJob = async (jobData) => {
   }
 };
 
-export const fetchJobs = async (userId) => {
+export const fetchJobs = async (userId, lang) => {
   try {
     console.log("Fetching jobs for userId:", userId);
-    const response = await axios.get(`${BASE_URL}/jobs/client/${userId}`);
+    const response = await axios.get(
+      `${BASE_URL}/${lang}/jobs/client/${userId}`,
+    );
     return response.data;
   } catch (err) {
     console.error("Failed to fetch jobs:", err);
@@ -159,9 +161,11 @@ export const fetchWorkerDetails = async (WORKER_ID, lang) => {
   }
 };
 
-export const fetchJobDetails = async (JOB_ID) => {
+export const fetchJobDetails = async (JOB_ID, lang) => {
   try {
-    const response = await axios.get(`${BASE_URL}/get_job_details/${JOB_ID}`);
+    const response = await axios.get(
+      `${BASE_URL}/${lang}/get_job_details/${JOB_ID}`,
+    );
     return response.data;
   } catch (err) {
     console.error("Failed to fetch job details:", err);

@@ -97,13 +97,14 @@ const ViewJob = () => {
 
     const getJob = async () => {
         if (jobId) {
-            const job = await fetchJobDetails(jobId);
-            if (job) {
-                // console.log("Fetched job details:", job);
-                if (job.job_details.acceptedWorker) {
-                    await getWorkerDetails(job.job_details.acceptedWorker, currentLanguage);
+            const jobData = await fetchJobDetails(jobId,currentLanguage.toLocaleLowerCase());
+            if (jobData) {
+                // console.log("Fetched job details:", jobData);
+                if (jobData.job_details.acceptedWorker) {
+                    await getWorkerDetails(jobData.job_details.acceptedWorker, currentLanguage.toLocaleLowerCase());
                 }
-                setJob(job.job_details);
+                // console.log("Job details set to state:", jobData.job_details);
+                setJob(jobData.job_details);
             } else {
                 setErrorMessage("Failed to fetch job details. Please try again later.");
                 setShowErrorAlert(true);
@@ -338,6 +339,8 @@ const ViewJob = () => {
                         job?.responses?.length > 0 &&
                         (job?.responses?.map((response, index) => {
                             const [responseId, actualResponse] = Object.entries(response)[0];
+                            console.log("Response ID:", responseId);
+                            console.log("Actual Response:", actualResponse);
                             return (
                                 actualResponse.type === "acceptance" ?
                                     <JobAcceptanceRequest key={index} request={actualResponse} requestId={responseId} /> :

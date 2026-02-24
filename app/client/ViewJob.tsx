@@ -11,7 +11,8 @@ import {
     useWindowDimensions,
     View,
     Image,
-    Alert
+    Alert,
+    Modal
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
@@ -23,6 +24,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUserId } from "@/utils/AsyncStorageUtils";
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useTranslation } from "react-i18next";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 export function timeAgo(isoTime) {
     const past = new Date(isoTime);
     const now = new Date();
@@ -54,6 +57,9 @@ const ViewJob = () => {
     let { height } = useWindowDimensions();
     height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
 
+    const [showScanner, setShowScanner] = useState(false);
+    const [permission, requestPermission] = useCameraPermissions();
+
     const [user, setUser] = useState<string | null>('');
     const [name, setName] = useState<string | null>('');
     const [job, setJob] = useState({
@@ -84,6 +90,23 @@ const ViewJob = () => {
     const [isSuccessModal, setSuccessModal] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
 
+    const handleScanPress = async () => {
+        if (!permission?.granted) {
+            const { granted } = await requestPermission();
+            if (!granted) {
+                Alert.alert(t('navbar.permissionRequired'), t('navbar.cameraPermissionMessage'));
+                return;
+            }
+        }
+        setShowScanner(true);
+    };
+
+    const handleBarCodeScanned = ({ data }: { data: string }) => {
+        setShowScanner(false);
+        console.log("QR Scan Result:", data);
+        Alert.alert(t('navbar.scanResult'), data, [{ text: t('common.ok') }]);
+    };
+
     function viewRequest(requestId, request) {
         router.push({
             pathname: "/client/JobRequest",
@@ -97,7 +120,7 @@ const ViewJob = () => {
 
     const getJob = async () => {
         if (jobId) {
-            const jobData = await fetchJobDetails(jobId,currentLanguage.toLocaleLowerCase());
+            const jobData = await fetchJobDetails(jobId, currentLanguage.toLocaleLowerCase());
             if (jobData) {
                 // console.log("Fetched job details:", jobData);
                 if (jobData.job_details.acceptedWorker) {
@@ -321,8 +344,9 @@ const ViewJob = () => {
                                     </TouchableOpacity>
                                 </View>
                             </View>
-                            <TouchableOpacity style={{ height: 50, backgroundColor: "#9facf3", borderRadius: 10, justifyContent: "center", alignItems: "center", marginTop: 10, borderWidth: 1, borderColor: "blue", flexDirection: 'row', gap: 10 }} >
-                                <AntDesign name="qrcode" size={24} color="black" />
+                            <TouchableOpacity style={{ height: 50, backgroundColor: "#9facf3", borderRadius: 10, justifyContent: "center", alignItems: "center", marginTop: 10, borderWidth: 1, borderColor: "blue", flexDirection: 'row', gap: 10 }} onPress={handleScanPress} >
+                                {/* <AntDesign name="qrcode" size={24} color="black" /> */}
+                                <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />
                                 <Text>Scan to complete job</Text>
                             </TouchableOpacity></>
                     )
@@ -361,6 +385,31 @@ const ViewJob = () => {
             <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message={errorMessage} />
 
             <BottomNavBar />
+
+            <Modal
+                visible={showScanner}
+                animationType="slide"
+                onRequestClose={() => setShowScanner(false)}
+            >
+                <View style={styles.scannerContainer}>
+                    <CameraView
+                        style={StyleSheet.absoluteFillObject}
+                        onBarcodeScanned={showScanner ? handleBarCodeScanned : undefined}
+                        barcodeScannerSettings={{
+                            barcodeTypes: ["qr"],
+                        }}
+                    />
+                    <View style={styles.overlay}>
+                        <Text style={styles.scanText}>{t('navbar.alignQRCode')}</Text>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setShowScanner(false)}
+                        >
+                            <Text style={styles.closeButtonText}>{t('common.cancel')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     )
 }
@@ -368,6 +417,43 @@ const ViewJob = () => {
 export default ViewJob
 
 const styles = StyleSheet.create({
+    qrIcon: {
+        marginLeft: 10,
+        backgroundColor: '#D7D3D3',
+        borderRadius: 8,
+        padding: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+    }, scannerContainer: {
+        flex: 1,
+        backgroundColor: 'black',
+    },
+    overlay: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingBottom: 50,
+    },
+    scanText: {
+        color: 'white',
+        fontSize: 18,
+        marginBottom: 20,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        padding: 10,
+        borderRadius: 5,
+    },
+    closeButton: {
+        backgroundColor: '#4560F4',
+        paddingHorizontal: 30,
+        paddingVertical: 12,
+        borderRadius: 25,
+    },
+    closeButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
     workerCard: {
         backgroundColor: "#E4E7FF",
         borderRadius: 20,

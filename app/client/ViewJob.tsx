@@ -18,9 +18,11 @@ import BottomNavBar from "../../components/BottomNavBar";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
-import { activityOnProposal, callUser, fetchWorkerDetails } from "@/services/GlobalAPIs";
+import { activityOnProposal, callUser, fetchJobDetails, fetchWorkerDetails } from "@/services/GlobalAPIs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUserId } from "@/utils/AsyncStorageUtils";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { useTranslation } from "react-i18next";
 export function timeAgo(isoTime) {
     const past = new Date(isoTime);
     const now = new Date();
@@ -42,23 +44,42 @@ export function timeAgo(isoTime) {
 
 const ViewJob = () => {
     const router = useRouter();
-    let { job } = useLocalSearchParams();
-    job = JSON.parse(job);
-    console.log(job);
+    // let { job } = useLocalSearchParams();
+    const { t, i18n } = useTranslation();
+    const currentLanguage = i18n.language.toUpperCase();
+    let { jobId } = useLocalSearchParams();
+    console.log("Received jobId:", jobId);
+    // job = JSON.parse(job);
+    // console.log(job);
     let { height } = useWindowDimensions();
     height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
 
     const [user, setUser] = useState<string | null>('');
     const [name, setName] = useState<string | null>('');
-
-    const [worker, setWorker] = useState({
-        name: "Darshan Choudhary",
-        email: "abc@gmail.com",
-        jobType: "Electrician",
-        workerRating: 4.5,
-        jobsDoneCount: 10,
-        experience: 5
+    const [job, setJob] = useState({
+        budget_max: "0",
+        budget_min: "0",
+        description: "-",
+        duration: "0",
+        job_details: "-",
+        job_id: "-",
+        location: "-",
+        posted_at: "-",
+        responses: [],
+        service_type: "-",
+        status: "-",
+        user_id: "-"
     });
+    const [worker, setWorker] = useState({
+        name: "Worker",
+        email: "abc@gmail.com",
+        jobType: "General",
+        workerRating: 0,
+        jobsDoneCount: 0,
+        experience: 0
+    });
+
+    const [errorMessage, setErrorMessage] = useState("");
 
     const [isSuccessModal, setSuccessModal] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
@@ -69,10 +90,30 @@ const ViewJob = () => {
             params: {
                 request: JSON.stringify(request),
                 requestId: requestId,
-                jobId: job.job_id
+                jobId: jobId
             }
         })
     }
+
+    const getJob = async () => {
+        if (jobId) {
+            const job = await fetchJobDetails(jobId);
+            if (job) {
+                // console.log("Fetched job details:", job);
+                if (job.job_details.acceptedWorker) {
+                    await getWorkerDetails(job.job_details.acceptedWorker, currentLanguage);
+                }
+                setJob(job.job_details);
+            } else {
+                setErrorMessage("Failed to fetch job details. Please try again later.");
+                setShowErrorAlert(true);
+            }
+        }
+    }
+
+    useEffect(() => {
+        getJob();
+    }, [])
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -91,7 +132,7 @@ const ViewJob = () => {
 
     async function handleConfirmWorker(request, requestId) {
         try {
-            const res = await activityOnProposal(job.job_id, request.workerId, requestId, 1);
+            const res = await activityOnProposal(jobId, request.workerId, requestId, 1);
             console.log("Worker confirmation response:", res);
             setSuccessModal(true);
         } catch (err) {
@@ -103,18 +144,19 @@ const ViewJob = () => {
         try {
             const res = await activityOnProposal(jobId, request.workerId, requestId, 0);
             console.log("Worker rejection response:", res);
+            setErrorMessage("Request is rejected.");
             setShowErrorAlert(true)
         } catch (err) {
             console.error("Error rejecting worker:", err);
         }
     }
 
-    async function getUserDetails(uid, lang) {
+    async function getWorkerDetails(uid, lang) {
         try {
             console.log("Fetching details for user ID:", uid);
             const workerData = await fetchWorkerDetails(uid, lang);
-            console.log("Client details response:", workerData);
-            setWorker(workerData.client);
+            console.log("worker details response:", workerData);
+            setWorker(workerData.worker);
         } catch (error) {
             console.error("Error fetching user details:", error);
         }
@@ -176,25 +218,27 @@ const ViewJob = () => {
     }
 
     const handleCall = async () => {
-        const workerId = job?.acceptedWorker;
-        const response = await callUser(user, name, workerId);
-        console.log("Call User Response:", response);
+        if (job) {
+            const workerId = job?.acceptedWorker;
+            const response = await callUser(user, name, workerId);
+            console.log("Call User Response:", response);
 
-        if (response["code"] == -1) {
-            Alert.alert('User offline', 'The recipient is offline, please try again after some time', [
-                {
-                    text: 'OK',
-                    onPress: () => console.log('OK Pressed'),
-                },
-            ]);
-        } else {
-            router.push({
-                pathname: '/call/CallingScreen',
-                params: {
-                    callee_uid: user,
-                    callee_name: worker?.name || "Worker"
-                }
-            });
+            if (response["code"] == -1) {
+                Alert.alert('User offline', 'The recipient is offline, please try again after some time', [
+                    {
+                        text: 'OK',
+                        onPress: () => console.log('OK Pressed'),
+                    },
+                ]);
+            } else {
+                router.push({
+                    pathname: '/call/CallingScreen',
+                    params: {
+                        callee_uid: user,
+                        callee_name: worker?.name || "Worker"
+                    }
+                });
+            }
         }
     }
 
@@ -215,18 +259,18 @@ const ViewJob = () => {
 
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6, justifyContent: 'space-between', marginBottom: 10, }}>
                         <Text style={styles.cardTitle}>Job Details</Text>
-                        <Text style={styles.posted}>Posted {timeAgo(job.posted_at)}</Text>
+                        <Text style={styles.posted}>Posted {timeAgo(job?.posted_at)}</Text>
                     </View>
 
                     <View style={styles.card}>
                         {[
-                            ["Status", job.status],
-                            ["Service", job.service_type],
-                            ["Job", job.job_details],
-                            ["Description", job.description],
-                            ["Duration", job.duration],
-                            ["Location", job.location],
-                            ["Budget Range", "₹" + job.budget_min + "-₹" + job.budget_max],
+                            ["Status", job?.status],
+                            ["Service", job?.service_type],
+                            ["Job", job?.job_details],
+                            ["Description", job?.description],
+                            ["Duration", job?.duration],
+                            ["Location", job?.location],
+                            ["Budget Range", "₹" + job?.budget_min + "-₹" + job?.budget_max],
                         ].map(([label, value]) => (
                             <View key={label} style={styles.row}>
                                 <Text style={styles.label}>{label}</Text>
@@ -239,45 +283,49 @@ const ViewJob = () => {
                             </View>
                         ))}
                     </View>
-                    <View style={styles.workerCard}>
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                            <Text style={styles.sectionHeading}>Worker Information</Text>
-                            <Text style={[styles.sectionHeading, { alignSelf: 'flex-end' }]}>#{worker.jobType}</Text>
-                        </View>
-                        <View style={styles.workerRow}>
-                            <View style={styles.avatar}>
-                                <Text style={styles.avatarText}>{worker?.name[0]}</Text>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.name}>{worker?.name}</Text>
-                                {worker?.jobsDoneCount === 0 ? <Text style={styles.jobs}>No Jobs Completed</Text> : <Text style={styles.jobs}>• {worker?.jobsDoneCount} Jobs Completed</Text>}
-                            </View>
-                            <View style={styles.ratingBox}>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <Text style={styles.star}>★</Text>
-                                    <Text style={styles.rating}>{worker?.workerRating}</Text>
+                    {job?.status === "assigned" && job?.acceptedWorker && (
+                        <>
+                            <View style={styles.workerCard}>
+                                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                                    <Text style={styles.sectionHeading}>Worker Information</Text>
+                                    <Text style={[styles.sectionHeading, { alignSelf: 'flex-end' }]}>#{worker.jobType}</Text>
                                 </View>
-                                <Text style={{ fontSize: 12, color: "black" }}>{worker?.experience} yrs experience</Text>
+                                <View style={styles.workerRow}>
+                                    <View style={styles.avatar}>
+                                        <Text style={styles.avatarText}>{worker?.name[0]}</Text>
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.name}>{worker?.name}</Text>
+                                        {worker?.jobsDoneCount === 0 ? <Text style={styles.jobs}>No Jobs Completed</Text> : <Text style={styles.jobs}>• {worker?.jobsDoneCount} Jobs Completed</Text>}
+                                    </View>
+                                    <View style={styles.ratingBox}>
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                            <Text style={styles.star}>★</Text>
+                                            <Text style={styles.rating}>{worker?.workerRating}</Text>
+                                        </View>
+                                        <Text style={{ fontSize: 12, color: "black" }}>{worker?.experience} yrs experience</Text>
+                                    </View>
+                                </View>
+                                <View style={styles.actionRow}>
+                                    <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
+                                        <Text style={styles.callText}>📞 Call Worker</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={styles.msgBtn} onPress={() => {
+                                        router.push({
+                                            pathname: '/client/ChatScreen',
+                                            params: { workerId: job?.acceptedWorker || "sgsdsdg", workerName: worker?.name }
+                                        });
+                                    }}>
+                                        <Text style={styles.msgText}>💬 Send Message</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
-                        <View style={styles.actionRow}>
-                            <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
-                                <Text style={styles.callText}>📞 Call Worker</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.msgBtn} onPress={() => {
-                                router.push({
-                                    pathname: '/client/ChatScreen',
-                                    params: { workerId: job?.acceptedWorker || "sgsdsdg", workerName: worker?.name }
-                                });
-                            }}>
-                                <Text style={styles.msgText}>💬 Send Message</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                    <TouchableOpacity style={{height: 50, backgroundColor: "#9facf3", borderRadius: 10, justifyContent: "center", alignItems: "center", marginTop: 10, borderWidth : 1, borderColor: "blue",flexDirection : 'row', gap : 10}} >
-                        <AntDesign name="qrcode" size={24} color="black" />
-                        <Text>Scan to complete job</Text>
-                    </TouchableOpacity>
+                            <TouchableOpacity style={{ height: 50, backgroundColor: "#9facf3", borderRadius: 10, justifyContent: "center", alignItems: "center", marginTop: 10, borderWidth: 1, borderColor: "blue", flexDirection: 'row', gap: 10 }} >
+                                <AntDesign name="qrcode" size={24} color="black" />
+                                <Text>Scan to complete job</Text>
+                            </TouchableOpacity></>
+                    )
+                    }
                     <View style={[styles.horizontalLine, { backgroundColor: 'grey', width: '100%', marginVertical: 10 }]} />
                 </View>
                 <View style={[styles.card, {
@@ -303,8 +351,11 @@ const ViewJob = () => {
                 <RevisedProposalRequest request={{ workerName: "Mayuresh Choudhary and darshan choudhary " }} /> */}
                 </View>
             </ScrollView>
-            <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Worker is Confirmed." handleOk={() => setSuccessModal(false)} />
-            <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message="Request is rejected." />
+            <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Worker is Confirmed." handleOk={() => {
+                setSuccessModal(false);
+                getJob()
+            }} />
+            <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message={errorMessage} />
 
             <BottomNavBar />
         </SafeAreaView>
@@ -322,7 +373,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#000",
         marginTop: 10
-    }, 
+    },
     sectionHeading: {
         fontSize: 16,
         fontWeight: "500",

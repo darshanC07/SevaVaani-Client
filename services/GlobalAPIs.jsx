@@ -159,6 +159,16 @@ export const fetchWorkerDetails = async (WORKER_ID, lang) => {
   }
 };
 
+export const fetchJobDetails = async (JOB_ID) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/get_job_details/${JOB_ID}`);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch job details:", err);
+    throw err;
+  }
+};
+
 export const createChat = async (clientUid, workerUid) => {
   try {
     console.log("Creating chat for clientUid:", clientUid);

@@ -150,7 +150,10 @@ const JobRequest = () => {
           </View>
         </ScrollView>
       </View>
-      <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Request Accepted." handleOk={() => setSuccessModal(false)} />
+      <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Request Accepted." handleOk={() => {
+        setSuccessModal(false);
+        router.push({pathname : "/client/ViewJob",params: { jobId: jobId }});
+      }} />
       <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message="Request Rejected." />
       <BottomNavBar />
     </SafeAreaView>

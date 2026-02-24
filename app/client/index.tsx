@@ -212,7 +212,8 @@ const Index = () => {
                           // onPress={() => router.push("/client/JobRequest")}
                           onPress={() => router.push({
                             pathname: "/client/ViewJob",
-                            params: { job: JSON.stringify(job) }
+                            // params: { job: JSON.stringify(job) }
+                            params: { jobId: job.job_id }
                           })}
                         >
                           <Text style={styles.viewRequest}>View</Text>

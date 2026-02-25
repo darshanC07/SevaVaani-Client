@@ -315,3 +315,15 @@ export const verifyRazorpayPayment = async (
     throw err;
   }
 };
+
+export const getChatList = async (CLIENT_ID, lang) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/${lang}/get_chat_list/client/${CLIENT_ID}`,
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch chat list:", err);
+    return null;
+  }
+};

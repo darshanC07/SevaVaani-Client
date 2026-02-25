@@ -131,13 +131,13 @@ const BottomNavBar = () => {
           <AIChatOverlay onClose={() => setShowOverlay(false)} />
         </View>
       </Modal>
-      <View>
+      <TouchableOpacity style={{ alignItems: "center" }} onPress={() => router.push('/client/ChatList')}>
         <Image
           source={require("../assets/BottomNavBar/chat.png")}
           style={styles.icon}
         />
         <Text style={{ color: "white", fontSize: 10, textAlign: "center" }}>Chat</Text>
-      </View>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/client/Profile' as any)} >
         <Image
           source={require("../assets/BottomNavBar/user.png")}

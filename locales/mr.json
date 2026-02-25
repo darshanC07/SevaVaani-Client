@@ -14,7 +14,8 @@
     "delete": "हटवा",
     "confirm": "पुष्टी करा",
     "yes": "होय",
-    "no": "नाही"
+    "no": "नाही",
+    "ok": "ठीक आहे"
   },
   "onboarding": {
     "screen1": {
@@ -75,7 +76,10 @@
     "weekdays": "आठवड्याचे दिवस",
     "weekend": "शनिवार-रविवार",
     "allDays": "सर्व दिवस",
-    "finishSetup": "सेटअप पूर्ण करा"
+    "finishSetup": "सेटअप पूर्ण करा",
+    "enterEmailAndPassword": "कृपया ईमेल आणि पासवर्ड टाका",
+    "invalidMobile": "कृपया वैध 10-अंकी मोबाइल नंबर टाका",
+    "enterValidOTP": "कृपया 4-अंकी OTP टाका"
   },
   "client": {
     "goodMorning": "सुप्रभात",
@@ -99,7 +103,10 @@
     "painting": "पेंटिंग",
     "appliance": "उपकरण दुरुस्ती",
     "myRecentJobs": "माझ्या अलीकडील नोकऱ्या",
-    "messages": "संदेश"
+    "messages": "संदेश",
+    "sampleJobTitle": "बाथरूम नळाची दुरुस्ती",
+    "completed": "पूर्ण",
+    "viewRequest": "विनंती पहा"
   },
   "jobRequest": {
     "title": "नोकरीची विनंती",
@@ -120,7 +127,15 @@
     "requestRejected": "विनंती नाकारली",
     "redirecting": "होम वर पुनर्निर्देशित करत आहे",
     "scopeOfWork": "कामाची व्याप्ती",
-    "timeAvailability": "वेळ आणि उपलब्धता"
+    "timeAvailability": "वेळ आणि उपलब्धता",
+    "additionalParts": "अतिरिक्त भाग: आवश्यक असल्यासच शुल्क आकारले जाईल",
+    "taxesIncluded": "कर: समाविष्ट",
+    "scopeItem1": "बाथरूम नळाची तपासणी",
+    "scopeItem2": "गळती किंवा सैल फिटिंग दुरुस्त करणे",
+    "scopeItem3": "आवश्यक असल्यास वॉशर/सील बदलणे",
+    "scopeItem4": "दुरुस्तीनंतर मूलभूत कार्यक्षमता चाचणी",
+    "estimatedDuration": "अंदाजे कालावधी: 30-40 मिनिटे",
+    "availabilityNote": "उपलब्धता: 1 तासाच्या आत सुरू करू शकतो"
   },
   "profile": {
     "myProfile": "माझे प्रोफाइल",
@@ -143,7 +158,8 @@
     "savedCards": "जतन केलेली कार्डे",
     "termsConditions": "अटी आणि शर्ती",
     "privacyPolicy": "गोपनीयता धोरण",
-    "rateApp": "अॅप रेट करा"
+    "rateApp": "अॅप रेट करा",
+    "referDescription": "तुमचा मित्र पहिले बुकिंग पूर्ण केल्यावर ₹100 मिळवा"
   },
   "rankings": {
     "yourRatings": "तुमचे रेटिंग आणि पुनरावलोकने",
@@ -187,7 +203,8 @@
     "secondsAgo": "सेकंद आधी",
     "minutesAgo": "मिनिटे आधी",
     "hoursAgo": "तास आधी",
-    "daysAgo": "दिवस आधी"
+    "daysAgo": "दिवस आधी",
+    "yesterday": "काल"
   },
   "quotation": {
     "sendQuotationRequest": "कोटेशन विनंती पाठवा",
@@ -231,6 +248,39 @@
   "navbar": {
     "appName": "सेवावाणी",
     "language": "MR",
-    "selectLanguage": "भाषा निवडा"
+    "selectLanguage": "भाषा निवडा",
+    "permissionRequired": "परवानगी आवश्यक",
+    "cameraPermissionMessage": "QR कोड स्कॅन करण्यासाठी कॅमेरा प्रवेश आवश्यक आहे.",
+    "scanResult": "स्कॅन निकाल",
+    "alignQRCode": "QR कोड फ्रेममध्ये संरेखित करा"
+  },
+  "location": {
+    "trackingTitle": "स्थान ट्रॅकिंग",
+    "trackingBody": "पार्श्वभूमीत तुमचे स्थान ट्रॅक करत आहे"
+  },
+  "chat": {
+    "callTitle": "कॉल",
+    "call": "कॉल",
+    "initiatingCall": "कॉल सुरू होत आहे",
+    "callInitiated": "कॉल सुरू झाला",
+    "callMaskedMessage": "तुमचा कॉल गोपनीयतेसाठी मास्क केला आहे. कर्मचारी तुमचा फोन नंबर पाहू शकत नाही.",
+    "options": "पर्याय",
+    "chooseOption": "एक पर्याय निवडा",
+    "blockWorker": "या कर्मचाऱ्याला ब्लॉक करा",
+    "report": "तक्रार",
+    "listening": "ऐकत आहे...",
+    "typeMessage": "संदेश टाइप करा..."
+  },
+  "professions": {
+    "plumber": "प्लंबर",
+    "electrician": "इलेक्ट्रिशियन",
+    "carpenter": "सुतार",
+    "painter": "पेंटर",
+    "welder": "वेल्डर",
+    "mason": "गवंडी",
+    "gardener": "माळी",
+    "roofer": "छप्पर कारागीर",
+    "tiler": "टाइल कारागीर",
+    "houseKeeping": "हाउसकीपिंग"
   }
 }

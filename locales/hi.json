@@ -14,7 +14,8 @@
     "delete": "हटाएं",
     "confirm": "पुष्टि करें",
     "yes": "हां",
-    "no": "नहीं"
+    "no": "नहीं",
+    "ok": "ठीक है"
   },
   "onboarding": {
     "screen1": {
@@ -75,7 +76,10 @@
     "weekdays": "सप्ताह के दिन",
     "weekend": "सप्ताहांत",
     "allDays": "सभी दिन",
-    "finishSetup": "सेटअप समाप्त करें"
+    "finishSetup": "सेटअप समाप्त करें",
+    "enterEmailAndPassword": "कृपया ईमेल और पासवर्ड दर्ज करें",
+    "invalidMobile": "कृपया एक वैध 10-अंकों का मोबाइल नंबर दर्ज करें",
+    "enterValidOTP": "कृपया 4-अंकों का OTP दर्ज करें"
   },
   "client": {
     "goodMorning": "सुप्रभात",
@@ -97,7 +101,12 @@
     "cleaning": "सफाई",
     "carpentry": "बढ़ईगीरी",
     "painting": "पेंटिंग",
-    "appliance": "उपकरण मरम्मत"
+    "appliance": "उपकरण मरम्मत",
+    "myRecentJobs": "मेरी हाल की नौकरियां",
+    "messages": "संदेश",
+    "sampleJobTitle": "बाथरूम के नल की मरम्मत",
+    "completed": "पूर्ण",
+    "viewRequest": "अनुरोध देखें"
   },
   "jobRequest": {
     "title": "नौकरी का अनुरोध से",
@@ -118,7 +127,15 @@
     "requestRejected": "अनुरोध अस्वीकृत",
     "redirecting": "होम पर पुनर्निर्देशित हो रहा है",
     "scopeOfWork": "कार्य का दायरा",
-    "timeAvailability": "समय और उपलब्धता"
+    "timeAvailability": "समय और उपलब्धता",
+    "additionalParts": "अतिरिक्त पार्ट्स: केवल आवश्यकता होने पर शुल्क",
+    "taxesIncluded": "कर: शामिल",
+    "scopeItem1": "बाथरूम के नल का निरीक्षण",
+    "scopeItem2": "रिसाव या ढीली फिटिंग को ठीक करना",
+    "scopeItem3": "आवश्यकता होने पर वॉशर/सील का प्रतिस्थापन",
+    "scopeItem4": "मरम्मत के बाद बुनियादी कार्यक्षमता परीक्षण",
+    "estimatedDuration": "अनुमानित अवधि: 30-40 मिनट",
+    "availabilityNote": "उपलब्धता: 1 घंटे के भीतर शुरू कर सकते हैं"
   },
   "profile": {
     "myProfile": "मेरी प्रोफ़ाइल",
@@ -141,7 +158,8 @@
     "savedCards": "सहेजे गए कार्ड",
     "termsConditions": "नियम और शर्तें",
     "privacyPolicy": "गोपनीयता नीति",
-    "rateApp": "ऐप को रेट करें"
+    "rateApp": "ऐप को रेट करें",
+    "referDescription": "जब आपका दोस्त अपनी पहली बुकिंग पूरी करे तो ₹100 पाएं"
   },
   "rankings": {
     "yourRatings": "आपकी रेटिंग और समीक्षाएं",
@@ -185,7 +203,8 @@
     "secondsAgo": "सेकंड पहले",
     "minutesAgo": "मिनट पहले",
     "hoursAgo": "घंटे पहले",
-    "daysAgo": "दिन पहले"
+    "daysAgo": "दिन पहले",
+    "yesterday": "कल"
   },
   "quotation": {
     "sendQuotationRequest": "कोटेशन अनुरोध भेजें",
@@ -229,6 +248,39 @@
   "navbar": {
     "appName": "सेवावाणी",
     "language": "HI",
-    "selectLanguage": "भाषा चुनें"
+    "selectLanguage": "भाषा चुनें",
+    "permissionRequired": "अनुमति आवश्यक",
+    "cameraPermissionMessage": "QR कोड स्कैन करने के लिए कैमरे की अनुमति आवश्यक है।",
+    "scanResult": "स्कैन परिणाम",
+    "alignQRCode": "QR कोड को फ्रेम में संरेखित करें"
+  },
+  "location": {
+    "trackingTitle": "स्थान ट्रैकिंग",
+    "trackingBody": "पृष्ठभूमि में आपके स्थान को ट्रैक कर रहा है"
+  },
+  "chat": {
+    "callTitle": "कॉल",
+    "call": "कॉल",
+    "initiatingCall": "कॉल शुरू हो रहा है",
+    "callInitiated": "कॉल शुरू हुआ",
+    "callMaskedMessage": "आपका कॉल गोपनीयता के लिए मास्क किया गया है। कर्मचारी आपका फोन नंबर नहीं देख सकता।",
+    "options": "विकल्प",
+    "chooseOption": "एक विकल्प चुनें",
+    "blockWorker": "इस कर्मचारी को ब्लॉक करें",
+    "report": "रिपोर्ट",
+    "listening": "सुन रहा है...",
+    "typeMessage": "संदेश टाइप करें..."
+  },
+  "professions": {
+    "plumber": "प्लंबर",
+    "electrician": "इलेक्ट्रीशियन",
+    "carpenter": "बढ़ई",
+    "painter": "पेंटर",
+    "welder": "वेल्डर",
+    "mason": "राजमिस्त्री",
+    "gardener": "माली",
+    "roofer": "छत कारीगर",
+    "tiler": "टाइल कारीगर",
+    "houseKeeping": "हाउसकीपिंग"
   }
 }

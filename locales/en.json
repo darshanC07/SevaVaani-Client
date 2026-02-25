@@ -14,7 +14,8 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "ok": "OK"
   },
   "onboarding": {
     "screen1": {
@@ -75,7 +76,10 @@
     "weekdays": "Weekdays",
     "weekend": "Weekend",
     "allDays": "All days",
-    "finishSetup": "Finish Setup"
+    "finishSetup": "Finish Setup",
+    "enterEmailAndPassword": "Please enter email and password",
+    "invalidMobile": "Please enter a valid 10-digit mobile number",
+    "enterValidOTP": "Please enter a 4-digit OTP"
   },
   "client": {
     "goodMorning": "Good morning",
@@ -99,7 +103,10 @@
     "painting": "Painting",
     "appliance": "Appliance Repair",
     "myRecentJobs": "My Recent Jobs",
-    "messages": "Messages"
+    "messages": "Messages",
+    "sampleJobTitle": "Repairing of bathroom tap",
+    "completed": "Completed",
+    "viewRequest": "View Request"
   },
   "jobRequest": {
     "title": "Job request from",
@@ -120,7 +127,15 @@
     "requestRejected": "Request Rejected",
     "redirecting": "Redirecting to home in",
     "scopeOfWork": "Scope of Work",
-    "timeAvailability": "Time & Availability"
+    "timeAvailability": "Time & Availability",
+    "additionalParts": "Additional Parts: Charged only if required",
+    "taxesIncluded": "Taxes: Included",
+    "scopeItem1": "Inspection of bathroom tap",
+    "scopeItem2": "Fixing leakage or loose fitting",
+    "scopeItem3": "Replacement of washer/seal if required",
+    "scopeItem4": "Basic functionality testing after repair",
+    "estimatedDuration": "Estimated Duration: 30–40 minutes",
+    "availabilityNote": "Availability: Can start within 1 hour"
   },
   "profile": {
     "myProfile": "My Profile",
@@ -143,7 +158,8 @@
     "savedCards": "Saved Cards",
     "termsConditions": "Terms & Conditions",
     "privacyPolicy": "Privacy Policy",
-    "rateApp": "Rate App"
+    "rateApp": "Rate App",
+    "referDescription": "Get ₹100 when your friend completes their first booking"
   },
   "rankings": {
     "yourRatings": "Your Ratings & Reviews",
@@ -187,7 +203,8 @@
     "secondsAgo": "seconds ago",
     "minutesAgo": "minutes ago",
     "hoursAgo": "hours ago",
-    "daysAgo": "days ago"
+    "daysAgo": "days ago",
+    "yesterday": "Yesterday"
   },
   "quotation": {
     "sendQuotationRequest": "Send Quotation Request",
@@ -231,6 +248,39 @@
   "navbar": {
     "appName": "SevaVaani",
     "language": "EN",
-    "selectLanguage": "Select Language"
+    "selectLanguage": "Select Language",
+    "permissionRequired": "Permission Required",
+    "cameraPermissionMessage": "Camera access is needed to scan QR codes.",
+    "scanResult": "Scan Result",
+    "alignQRCode": "Align QR code within frame"
+  },
+  "location": {
+    "trackingTitle": "Location Tracking",
+    "trackingBody": "Tracking your location in background"
+  },
+  "chat": {
+    "callTitle": "Call",
+    "call": "Call",
+    "initiatingCall": "Initiating call to",
+    "callInitiated": "Call Initiated",
+    "callMaskedMessage": "Your call has been masked for privacy. The worker cannot see your phone number.",
+    "options": "Options",
+    "chooseOption": "Choose an option",
+    "blockWorker": "Block this worker",
+    "report": "Report",
+    "listening": "Listening...",
+    "typeMessage": "Type a message..."
+  },
+  "professions": {
+    "plumber": "Plumber",
+    "electrician": "Electrician",
+    "carpenter": "Carpenter",
+    "painter": "Painter",
+    "welder": "Welder",
+    "mason": "Mason",
+    "gardener": "Gardener",
+    "roofer": "Roofer",
+    "tiler": "Tiler",
+    "houseKeeping": "House Keeping"
   }
 }

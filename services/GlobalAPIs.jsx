@@ -246,3 +246,71 @@ export const updateLastSeen = async (userUid) => {
     throw error;
   }
 };
+
+export const createRazorpayOrder = async (amount, notes = null) => {
+  try {
+    const response = await fetch(`${BASE_URL}/payment/create-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        amount,
+        notes: notes || undefined,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Create order failed: ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error("Create Razorpay order failed:", err);
+    throw err;
+  }
+};
+
+export const verifyRazorpayPayment = async (
+  orderId,
+  paymentId,
+  signature,
+  jobId,
+  amount,
+  clientId,
+  clientName,
+  workerId,
+  workerName,
+) => {
+  try {
+    const response = await fetch(`${BASE_URL}/payment/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+        payment_id: paymentId,
+        signature: signature,
+        job_id: jobId,
+        amount: amount,
+        client_id: clientId,
+        client_name: clientName,
+        worker_id: workerId,
+        worker_name: workerName,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.error || data?.status || "Verification failed");
+    }
+    return data;
+  } catch (err) {
+    console.error("Verify Razorpay payment failed:", err);
+    throw err;
+  }
+};

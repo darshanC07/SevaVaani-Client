@@ -12,20 +12,23 @@ import {
     View,
     Image,
     Alert,
-    Modal
+    Modal,
+    Pressable
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
-import { activityOnProposal, callUser, fetchJobDetails, fetchWorkerDetails } from "@/services/GlobalAPIs";
+import { activityOnProposal, callUser, createRazorpayOrder, fetchJobDetails, fetchWorkerDetails, verifyRazorpayPayment } from "@/services/GlobalAPIs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUserId } from "@/utils/AsyncStorageUtils";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 import { useTranslation } from "react-i18next";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import RazorpayCheckout from "react-native-razorpay";
+import LoaderKitView from "react-native-loader-kit";
+
 export function timeAgo(isoTime) {
     const past = new Date(isoTime);
     const now = new Date();
@@ -60,6 +63,8 @@ const ViewJob = () => {
     const [showScanner, setShowScanner] = useState(false);
     const [permission, requestPermission] = useCameraPermissions();
 
+    const [showPaymentProcessingModal, setShowPaymentProcessingModal] = useState(false);
+
     const [user, setUser] = useState<string | null>('');
     const [name, setName] = useState<string | null>('');
     const [job, setJob] = useState({
@@ -85,10 +90,74 @@ const ViewJob = () => {
         experience: 0
     });
 
+    const [isPaying, setIsPaying] = useState(false);
+
+    const PAYMENT_AMOUNT_RUPEES = 100;
+
     const [errorMessage, setErrorMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("Worker is Confirmed.");
 
     const [isSuccessModal, setSuccessModal] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
+
+    const [QRData, setQRData] = useState({});
+
+    const handlePay = async () => {
+        if (isPaying) return;
+        try {
+            if (job) {
+                if (QRData.jobId !== job.job_id || QRData.workerId !== job.acceptedWorker) {
+                    setErrorMessage("Scanned QR code does not match the job. Please scan the correct QR code.");
+                    setShowErrorAlert(true);
+                    return;
+                }
+                setIsPaying(true);
+                const order = await createRazorpayOrder(job.budget_max || 100, null);
+
+                const options: any = {
+                    key: order.key_id,
+                    amount: order.amount,
+                    currency: order.currency,
+                    order_id: order.order_id,
+                    name: "SevaVaani",
+                    description: "Test Payment",
+                    prefill: {
+                        name: name || "User",
+                        email: "abc@gmail.com" || ""
+                    },
+                    theme: { color: "#4560F4" }
+                };
+
+                const data = await RazorpayCheckout.open(options);
+
+                const verification = await verifyRazorpayPayment(
+                    order.order_id,
+                    data.razorpay_payment_id,
+                    data.razorpay_signature,
+                    job.job_id,
+                    job.budget_max,
+                    job.user_id,
+                    QRData.clientName,
+                    job.acceptedWorker,
+                    QRData.workerName
+                );
+
+                if (verification?.status === "success") {
+                    // Alert.alert("Payment successful", "Your test payment was verified.");
+                    setSuccessMessage("Payment successful");
+                    setSuccessModal(true);
+                } else {
+                    // Alert.alert("Payment verification failed", "Please try again.");
+                    setErrorMessage("Payment failed. Please try again.");
+                    setShowErrorAlert(true);
+                }
+            }
+        } catch (error: any) {
+            Alert.alert("Payment failed", error?.message || "Something went wrong.");
+        } finally {
+            setIsPaying(false);
+        }
+    };
 
     const handleScanPress = async () => {
         if (!permission?.granted) {
@@ -104,7 +173,15 @@ const ViewJob = () => {
     const handleBarCodeScanned = ({ data }: { data: string }) => {
         setShowScanner(false);
         console.log("QR Scan Result:", data);
-        Alert.alert(t('navbar.scanResult'), data, [{ text: t('common.ok') }]);
+        // Alert.alert(t('navbar.scanResult'), data, [{ text: t('common.ok') }]);
+        data = JSON.parse(data);
+        setQRData(data);
+        setShowPaymentProcessingModal(true);
+
+        setTimeout(() => {
+            setShowPaymentProcessingModal(false);
+            handlePay();
+        }, 1500);
     };
 
     function viewRequest(requestId, request) {
@@ -158,6 +235,7 @@ const ViewJob = () => {
         try {
             const res = await activityOnProposal(jobId, request.workerId, requestId, 1);
             console.log("Worker confirmation response:", res);
+            setSuccessMessage("Worker is Confirmed.");
             setSuccessModal(true);
         } catch (err) {
             console.error("Error confirming worker:", err);
@@ -271,6 +349,7 @@ const ViewJob = () => {
         <SafeAreaView style={{ flex: 1, backgroundColor: "white", height, justifyContent: 'space-between' }}>
             <View style={styles.headerBg} />
             <NavBar />
+
             <View style={styles.horizontalLine} />
             <ScrollView style={{ flex: 1 }} style={{
                 flex: 1,
@@ -378,7 +457,7 @@ const ViewJob = () => {
                 <RevisedProposalRequest request={{ workerName: "Mayuresh Choudhary and darshan choudhary " }} /> */}
                 </View>
             </ScrollView>
-            <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message="Worker is Confirmed." handleOk={() => {
+            <SuccessModal isVisible={isSuccessModal} toggleModal={() => setSuccessModal(!isSuccessModal)} title="Success!" message={successMessage} handleOk={() => {
                 setSuccessModal(false);
                 getJob()
             }} />
@@ -410,6 +489,31 @@ const ViewJob = () => {
                     </View>
                 </View>
             </Modal>
+            <Modal
+                transparent={true}
+                visible={showPaymentProcessingModal}
+                animationType="fade"
+                onRequestClose={() => {
+                    // console.log("attempt to close modal") 
+                }}
+            >
+                <Pressable
+                    style={styles.modalOverlay}
+                    onPress={() => {
+                        //  console.log("attempt to close modal")
+                    }}
+                >
+                    <View style={styles.modalView}>
+                        <Text style={{ color: 'black', fontSize: 16 }}>Proceeding to payment...</Text>
+                        <LoaderKitView
+                            style={{ width: 50, height: 50 }}
+                            name={"BallTrianglePath"}
+                            animationSpeedMultiplier={1.0} // speed up/slow down animation, default: 1.0, larger is faster
+                            color={"green"} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
+                        />
+                    </View>
+                </Pressable>
+            </Modal>
         </SafeAreaView>
     )
 }
@@ -427,6 +531,28 @@ const styles = StyleSheet.create({
     }, scannerContainer: {
         flex: 1,
         backgroundColor: 'black',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Add a semi-transparent background
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 30,
+        gap: 10,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
     },
     overlay: {
         flex: 1,

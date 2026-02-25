@@ -19,7 +19,8 @@ import ErrorModal from "@/components/ErrorModal";
 import { useTranslation } from "react-i18next";
 const JobRequest = () => {
   const router = useRouter();
-  let { request, requestId, jobId } = useLocalSearchParams();
+  let { request, requestId, jobId, optionEnabled } = useLocalSearchParams();
+  console.log("Received params:", { request, requestId, jobId, optionEnabled });
   request = JSON.parse(request);
   let { height } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
@@ -38,9 +39,15 @@ const JobRequest = () => {
   const [isSuccessModal, setSuccessModal] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState("Request Rejected.");
 
   async function handleConfirmWorker() {
     try {
+      if (optionEnabled === "false") {
+        setErrorMessage("The job is already assigned to another worker. You cannot accept this request.");
+        setShowErrorAlert(true);
+        return;
+      }
       const res = await activityOnProposal(jobId, request.workerId, requestId, 1);
       console.log("Worker confirmation response:", res);
       setSuccessModal(true);
@@ -51,8 +58,14 @@ const JobRequest = () => {
 
   async function handleRejectWorker() {
     try {
+      if (optionEnabled === "false") {
+        setErrorMessage("The job is already assigned to another worker. You cannot reject this request.");
+        setShowErrorAlert(true);
+        return;
+      }
       const res = await activityOnProposal(jobId, request.workerId, requestId, 0);
       console.log("Worker rejection response:", res);
+      setErrorMessage("Request Rejected.");
       setShowErrorAlert(true)
     } catch (err) {
       console.error("Error rejecting worker:", err);
@@ -62,7 +75,7 @@ const JobRequest = () => {
   async function getUserDetails(uid) {
     try {
       console.log("Fetching details for user ID:", uid);
-      const workerData = await fetchWorkerDetails(uid,currentLanguage);
+      const workerData = await fetchWorkerDetails(uid, currentLanguage);
       console.log("Worker details response:", workerData);
       setWorker(workerData.worker);
     } catch (error) {
@@ -157,7 +170,7 @@ const JobRequest = () => {
         setSuccessModal(false);
         router.push({ pathname: "/client/ViewJob", params: { jobId: jobId } });
       }} />
-      <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message="Request Rejected." />
+      <ErrorModal isVisible={showErrorAlert} toggleModal={setShowErrorAlert} title="Reject" message={errorMessage} />
       <BottomNavBar />
     </SafeAreaView>
   );

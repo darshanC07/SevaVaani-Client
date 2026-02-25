@@ -304,11 +304,12 @@ export const verifyRazorpayPayment = async (
       }),
     });
 
-    const data = await response.json();
     if (!response.ok) {
-      throw new Error(data?.error || data?.status || "Verification failed");
+      const errorText = await response.text();
+      throw new Error(`Payment verification failed: ${errorText}`);
     }
-    return data;
+
+    return await response.json();
   } catch (err) {
     console.error("Verify Razorpay payment failed:", err);
     throw err;

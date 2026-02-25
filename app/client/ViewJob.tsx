@@ -102,11 +102,14 @@ const ViewJob = () => {
 
     const [QRData, setQRData] = useState({});
 
-    const handlePay = async () => {
+    const handlePay = async (QRData) => {
         if (isPaying) return;
         try {
             if (job) {
-                if (QRData.jobId !== job.job_id || QRData.workerId !== job.acceptedWorker) {
+                console.log("QR Data:", QRData);
+                console.log("Job id:", jobId);
+                console.log("Accepted worker id:", job.acceptedWorker);
+                if (QRData.jobId !== jobId || QRData.workerId !== job.acceptedWorker) {
                     setErrorMessage("Scanned QR code does not match the job. Please scan the correct QR code.");
                     setShowErrorAlert(true);
                     return;
@@ -134,14 +137,14 @@ const ViewJob = () => {
                     order.order_id,
                     data.razorpay_payment_id,
                     data.razorpay_signature,
-                    job.job_id,
+                    jobId,
                     job.budget_max,
                     job.user_id,
                     QRData.clientName,
                     job.acceptedWorker,
                     QRData.workerName
                 );
-
+                console.log("Payment verification response:", verification);
                 if (verification?.status === "success") {
                     // Alert.alert("Payment successful", "Your test payment was verified.");
                     setSuccessMessage("Payment successful");
@@ -175,22 +178,25 @@ const ViewJob = () => {
         console.log("QR Scan Result:", data);
         // Alert.alert(t('navbar.scanResult'), data, [{ text: t('common.ok') }]);
         data = JSON.parse(data);
+        console.log("Parsed QR Data:", data.jobId);
         setQRData(data);
         setShowPaymentProcessingModal(true);
 
         setTimeout(() => {
             setShowPaymentProcessingModal(false);
-            handlePay();
+            handlePay(data);
         }, 1500);
     };
 
-    function viewRequest(requestId, request) {
+    function viewRequest(requestId, request,optionEnabled) {
+        console.log("Viewing request:", { requestId, request, optionEnabled });
         router.push({
             pathname: "/client/JobRequest",
             params: {
                 request: JSON.stringify(request),
                 requestId: requestId,
-                jobId: jobId
+                jobId: jobId,
+                optionEnabled : optionEnabled
             }
         })
     }
@@ -264,7 +270,7 @@ const ViewJob = () => {
         }
     }
 
-    const JobAcceptanceRequest = ({ request, requestId }) => {
+    const JobAcceptanceRequest = ({ request, requestId, optionEnabled}) => {
         // console.log("Request ID:", requestId);
         return (
             <View style={{
@@ -282,10 +288,10 @@ const ViewJob = () => {
             }}>
                 <Text style={{ width: '70%', fontSize: 16 }}>Job Acceptance Request from {request.workerName}</Text>
                 <View style={{ flexDirection: "row", gap: 5 }}>
-                    <TouchableOpacity style={{ backgroundColor: "#8AFF8A", padding: 10, borderRadius: 10, borderColor: 'green', borderWidth: 1 }} onPress={() => handleConfirmWorker(request, requestId)}>
+                    <TouchableOpacity style={{ backgroundColor: "#8AFF8A", padding: 10, borderRadius: 10, borderColor: 'green', borderWidth: 1 }} onPress={() => handleConfirmWorker(request, requestId)} disabled={!optionEnabled}>
                         <Image source={require("../../assets/Jobs/accept.png")} style={{ width: 20, height: 20, borderRadius: 20 }} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={{ backgroundColor: "#FF5C5C", padding: 10, borderRadius: 10, borderColor: 'red', borderWidth: 1 }} onPress={() => handleRejectWorker(request, requestId)}>
+                    <TouchableOpacity style={{ backgroundColor: "#FF5C5C", padding: 10, borderRadius: 10, borderColor: 'red', borderWidth: 1 }} onPress={() => handleRejectWorker(request, requestId)} disabled={!optionEnabled}>
                         <Image source={require("../../assets/Jobs/reject.png")} style={{ width: 20, height: 20, borderRadius: 20 }} />
                     </TouchableOpacity>
                 </View>
@@ -293,7 +299,7 @@ const ViewJob = () => {
         )
     }
 
-    const RevisedProposalRequest = ({ request, requestId }) => {
+    const RevisedProposalRequest = ({ request, requestId ,optionEnabled}) => {
         return (
             <View style={{
                 backgroundColor: "white",
@@ -310,7 +316,7 @@ const ViewJob = () => {
             }}>
                 <Text style={{ width: '70%', fontSize: 16 }}>Negotiation Request from {request.workerName}</Text>
                 <View style={{ flexDirection: "row", gap: 5 }}>
-                    <TouchableOpacity style={{ backgroundColor: "#e3e6e3", padding: 10, borderRadius: 10, borderColor: 'black', borderWidth: 1 }} onPress={() => viewRequest(requestId, request)}>
+                    <TouchableOpacity style={{ backgroundColor: "#e3e6e3", padding: 10, borderRadius: 10, borderColor: 'black', borderWidth: 1 }} onPress={() => viewRequest(requestId, request,optionEnabled)}>
                         <Ionicons name="eye" size={24} color="black" />
                     </TouchableOpacity>
 
@@ -386,7 +392,7 @@ const ViewJob = () => {
                             </View>
                         ))}
                     </View>
-                    {job?.status === "assigned" && job?.acceptedWorker && (
+                    {(job?.status === "assigned" || job?.status === "completed") && job?.acceptedWorker && (
                         <>
                             <View style={styles.workerCard}>
                                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
@@ -446,8 +452,8 @@ const ViewJob = () => {
                             console.log("Actual Response:", actualResponse);
                             return (
                                 actualResponse.type === "acceptance" ?
-                                    <JobAcceptanceRequest key={index} request={actualResponse} requestId={responseId} /> :
-                                    actualResponse.type === "revised_proposal" ? <RevisedProposalRequest key={index} request={actualResponse} requestId={responseId} /> : null
+                                    <JobAcceptanceRequest key={index} request={actualResponse} requestId={responseId} optionEnabled={job.status==="assigned" || job.status==="completed" ? false : true} /> :
+                                    actualResponse.type === "revised_proposal" ? <RevisedProposalRequest key={index} request={actualResponse} requestId={responseId} optionEnabled={job.status==="assigned" || job.status==="completed" ? false : true} /> : null
                             )
                         })
                         ) : <Text style={{ color: "black", fontSize: 16, textAlign: "center", marginTop: 20 }}>No responses yet</Text>

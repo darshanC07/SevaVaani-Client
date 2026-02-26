@@ -5,35 +5,21 @@ import {
     ChannelProfileType,
     ClientRoleType,
     RtcConnection,
-    IRtcEngineEventHandler,
     IRtcEngine,
 } from 'react-native-agora';
 import { requestAudioPermission } from './permissions';
 
-export const useRequestAudioHook = () => {
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      // Request required permissions from Android
-
-      requestAudioPermission().then(() => {
-        console.log('requested!');
-      });
-    }
-  }, []);
-};
-
 export const useInitializeAgora = () => {
-    // Replace with your actual App ID and Token
+    // NOTE: Hardcoded tokens expire. Ensure this matches your Channel Name (CN)
     const appId = '7036b6dbe7134a1e98f2856306366bb6';
-    const token = '007eJxTYNhyePeP7FlC14P4TnwzEZkR/9H37vxjXH/Mbkm7l1/Un7BQgcHcwNgsySwlKdXc0Ngk0TDV0iLNyMLUzNjAzNjMLCnJzP9hQ2ZDICND+CcLFkYGCATxuRhyK3WTMxLz8lJzGBgAjQoiyQ==';
+    // const token = '007eJxTYDj7KElz23SxhgeLd4T9vf4t+5Trl6a50t9Te57/zL4TeadEgcHcwNgsySwlKdXc0Ngk0TDV0iLNyMLUzNjAzNjMLCnJzE95QWZDICNDXqMkKyMDBIL4XAy5lbrJGYl5eak5DAwAS1MkdQ==';
 
-    const [channelName, setChannelName] = useState('my-channel');
     const [joinSucceed, setJoinSucceed] = useState(false);
-    const [peerIds, setPeerIds] = useState<number[]>([]);
+    const [peerIds, setPeerIds] = useState([]);
     const [isMute, setIsMute] = useState(false);
     const [isSpeakerEnable, setIsSpeakerEnable] = useState(true);
 
-    const engine = useRef<IRtcEngine | null>(null);
+    const engine = useRef(null);
 
     const initAgora = useCallback(async () => {
         if (Platform.OS === 'android') {
@@ -41,45 +27,43 @@ export const useInitializeAgora = () => {
         }
 
         try {
-            // 1. Create the engine instance
-            engine.current = createAgoraRtcEngine();
-            
-            // 2. Initialize the engine
-            engine.current.initialize({ appId });
+            if (!engine.current) {
+                engine.current = createAgoraRtcEngine();
+                engine.current.initialize({ appId });
 
-            // 3. Register Event Handlers (Recommended v4.x way)
-            engine.current.registerEventHandler({
-                onJoinChannelSuccess: (connection: RtcConnection, uid: number) => {
-                    console.log('Successfully joined:', connection.channelId, uid);
-                    setJoinSucceed(true);
-                },
-                onUserJoined: (connection: RtcConnection, remoteUid: number) => {
-                    console.log('Remote user joined:', remoteUid);
-                    setPeerIds((prev) => [...new Set([...prev, remoteUid])]);
-                },
-                onUserOffline: (connection: RtcConnection, remoteUid: number) => {
-                    console.log('Remote user left:', remoteUid);
-                    setPeerIds((prev) => prev.filter((id) => id !== remoteUid));
-                },
-                onError: (err) => {
-                    console.error('Agora Error:', err);
-                },
-            });
+                engine.current.registerEventHandler({
+                    onJoinChannelSuccess: (connection, uid) => {
+                        console.log('Successfully joined:', connection.channelId, uid);
+                        setJoinSucceed(true);
+                    },
+                    onUserJoined: (connection, remoteUid) => {
+                        console.log('Remote user joined:', remoteUid);
+                        setPeerIds((prev) => [...new Set([...prev, remoteUid])]);
+                    },
+                    onUserOffline: (connection, remoteUid) => {
+                        console.log('Remote user left:', remoteUid);
+                        setPeerIds((prev) => prev.filter((id) => id !== remoteUid));
+                    },
+                    onError: (err) => {
+                        console.error('Agora Error:', err);
+                    },
+                });
 
-            // 4. Global configurations
-            await engine.current.enableAudio();
-            await engine.current.setEnableSpeakerphone(true);
-            
+                await engine.current.enableAudio();
+                await engine.current.setEnableSpeakerphone(true);
+            }
         } catch (e) {
             console.error('Initialization failed:', e);
         }
     }, [appId]);
 
-    const join = async () => {
-        if (joinSucceed) return;
+    const join = async (channelName, token) => {
+        if (!engine.current) {
+            await initAgora();
+        }
 
         try {
-            // Communication profile is optimized for 1-on-1 or small group calls
+            // Use the token passed from the component
             engine.current?.joinChannel(token, channelName, 0, {
                 channelProfile: ChannelProfileType.ChannelProfileCommunication,
                 clientRoleType: ClientRoleType.ClientRoleBroadcaster,
@@ -107,37 +91,30 @@ export const useInitializeAgora = () => {
         setIsMute(nextMuteState);
     }, [isMute]);
 
-    const toggleIsSpeakerEnable = useCallback(async () => {
-        const nextSpeakerState = !isSpeakerEnable;
-        await engine.current?.setEnableSpeakerphone(nextSpeakerState);
-        setIsSpeakerEnable(nextSpeakerState);
-    }, [isSpeakerEnable]);
-
     useEffect(() => {
         initAgora();
-
         return () => {
-            // Fixed cleanup logic
-            const currentEngine = engine.current;
-            if (currentEngine) {
-                currentEngine.leaveChannel();
-                currentEngine.release();
+            if (engine.current) {
+                engine.current.release();
                 engine.current = null;
             }
         };
     }, [initAgora]);
 
+    const toggleSpeaker = useCallback(async () => {
+        const nextState = !isSpeakerEnable;
+        await engine.current?.setEnableSpeakerphone(nextState);
+        setIsSpeakerEnable(nextState);
+    }, [isSpeakerEnable]);
+
     return {
-        channelName,
         isMute,
         isSpeakerEnable,
         joinSucceed,
         peerIds,
-        setChannelName,
         join,
         leaveChannel,
         toggleIsMute,
-        toggleIsSpeakerEnable,
-        
+        toggleSpeaker
     };
 };

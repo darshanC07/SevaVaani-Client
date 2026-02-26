@@ -70,6 +70,7 @@ export default function Index() {
               CN: data.channelName,
               anotherUserId: data.user2,
               anotherUserName: data.user2_name,
+              channelToken : data.token
             },
           });
         } else if (uid === data.user2) {
@@ -79,6 +80,7 @@ export default function Index() {
               CN: data.channelName,
               anotherUserId: data.user1,
               anotherUserName: data.user1_name,
+              channelToken : data.token
             },
           });
         }

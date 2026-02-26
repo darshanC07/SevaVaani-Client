@@ -46,7 +46,7 @@ const WorkerRankBar = ({ data, id, userId, userName }) => {
             borderRadius: 10
         }}>
             <View><Text>{id + 1}</Text></View>
-            <View>
+            <View style={{ justifyContent: 'center', alignItems: 'left' }}>
                 <Text style={{ fontSize: 16, fontWeight: '600' }}>{data[2] || "User"}</Text>
                 <Text style={{ fontSize: 14, color: 'grey' }}>{data[4] || "Worker"}</Text>
             </View>
@@ -58,6 +58,7 @@ const WorkerRankBar = ({ data, id, userId, userName }) => {
                 // const userId = "0qD34d7S4FaD6afL6cVN3nOE9zJ2";
                 // const clientName = "Dayanand"
                 const workerId = data[0];
+                console.log("userId:", userId, "workerId:", workerId, "userName:", userName);
                 const response = await callUser(userId, userName, workerId);
                 console.log("Call User Response:", response);
 
@@ -159,7 +160,8 @@ const WorkerRankingScreen = () => {
 
     const fetchWorkers = async (uid: string | null) => {
         console.log("Fetching nearby workers for User ID:", uid);
-        const workersLoc = await fetchNearByWorkers(uid);
+        setNearbyWorkersLoc([]);
+        const workersLoc = await fetchNearByWorkers(uid,currentLanguage);
         // const workersLoc = await fetchNearByWorkers(user);
         console.log("API Response for Nearby Workers:", workersLoc);
         console.log("Nearby Workers Location Data:", workersLoc["nearby_workers"]);
@@ -168,8 +170,7 @@ const WorkerRankingScreen = () => {
         setClientLoc(workersLoc["client_loc"]);
     };
 
-    useEffect(() => {
-        const fetchUser = async () => {
+    const fetchUser = async () => {
             const uid = await getUserId();
             if (!uid) {
                 router.replace('/login/');
@@ -179,9 +180,10 @@ const WorkerRankingScreen = () => {
             setUser(uid);
             setName(uname);
         };
-        fetchUser();
 
-    }, [])
+    useEffect(() => {
+        fetchUser();
+    }, [currentLanguage])
 
 
     return (

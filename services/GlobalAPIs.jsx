@@ -36,10 +36,10 @@ export const UpdateClientLoc = async (CLIENT_ID, latitude, longitude) => {
   }
 };
 
-export const fetchNearByWorkers = async (CLIENT_ID) => {
+export const fetchNearByWorkers = async (CLIENT_ID, lang) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/get_nearby_workers/${CLIENT_ID}`,
+      `${BASE_URL}/${lang}/get_nearby_workers/${CLIENT_ID}`,
     );
     return response.data;
   } catch (err) {

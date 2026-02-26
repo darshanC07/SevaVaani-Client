@@ -16,9 +16,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import config from "../../config.json";
 import { ActivityIndicator } from "react-native";
+import { useTranslation } from "react-i18next";
 
 const EmailScreen = () => {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language.toLocaleLowerCase();
   let { height, width } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
   const [uid, setUid] = useState<string | null>(null);
@@ -153,7 +156,7 @@ const EmailScreen = () => {
               disabled={loading}
               onPress={() => {
                 if (email && password) createUser(email, password);
-                else alert("Please enter email and password");
+                else alert(t('registration.enterEmailAndPassword'));
               }}
             >
               {loading ? (
@@ -167,7 +170,7 @@ const EmailScreen = () => {
 
         <View style={[styles.footer, { display: "none" }]}>
           <TouchableOpacity style={styles.continueButton} activeOpacity={0.9}>
-            <Text style={styles.continueText}>Continue</Text>
+            <Text style={styles.continueText}>{t('common.continue')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -276,14 +279,14 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   loaderOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(255,255,255,0.6)",
-  justifyContent: "center",
-  alignItems: "center",
-},
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255,255,255,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
 });

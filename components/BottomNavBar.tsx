@@ -96,32 +96,6 @@ const BottomNavBar = () => {
       </TouchableOpacity>
 
       <Modal
-        transparent={true}
-        visible={showLoading}
-        animationType="fade"
-        onRequestClose={() => {
-          // console.log("attempt to close modal") 
-        }}
-      >
-        <Pressable
-          style={styles.loadingModalOverlay}
-          onPress={() => {
-            //  console.log("attempt to close modal")
-          }}
-        >
-          <View style={styles.modalView}>
-            <Text style={{ color: 'black', fontSize: 16 }}>Loading Assistant</Text>
-            <LoaderKitView
-              style={{ width: 50, height: 50 }}
-              name={"BallSpinFadeLoader"}
-              animationSpeedMultiplier={1.0} // speed up/slow down animation, default: 1.0, larger is faster
-              color={"blue"} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
-            />
-          </View>
-        </Pressable>
-      </Modal>
-
-      <Modal
         animationType="fade"
         transparent={true}
         visible={showOverlay}

@@ -188,7 +188,7 @@ const ViewJob = () => {
         }, 1500);
     };
 
-    function viewRequest(requestId, request,optionEnabled) {
+    function viewRequest(requestId, request, optionEnabled) {
         console.log("Viewing request:", { requestId, request, optionEnabled });
         router.push({
             pathname: "/client/JobRequest",
@@ -196,7 +196,7 @@ const ViewJob = () => {
                 request: JSON.stringify(request),
                 requestId: requestId,
                 jobId: jobId,
-                optionEnabled : optionEnabled
+                optionEnabled: optionEnabled
             }
         })
     }
@@ -270,7 +270,7 @@ const ViewJob = () => {
         }
     }
 
-    const JobAcceptanceRequest = ({ request, requestId, optionEnabled}) => {
+    const JobAcceptanceRequest = ({ request, requestId, optionEnabled }) => {
         // console.log("Request ID:", requestId);
         return (
             <View style={{
@@ -299,7 +299,7 @@ const ViewJob = () => {
         )
     }
 
-    const RevisedProposalRequest = ({ request, requestId ,optionEnabled}) => {
+    const RevisedProposalRequest = ({ request, requestId, optionEnabled }) => {
         return (
             <View style={{
                 backgroundColor: "white",
@@ -316,7 +316,7 @@ const ViewJob = () => {
             }}>
                 <Text style={{ width: '70%', fontSize: 16 }}>Negotiation Request from {request.workerName}</Text>
                 <View style={{ flexDirection: "row", gap: 5 }}>
-                    <TouchableOpacity style={{ backgroundColor: "#e3e6e3", padding: 10, borderRadius: 10, borderColor: 'black', borderWidth: 1 }} onPress={() => viewRequest(requestId, request,optionEnabled)}>
+                    <TouchableOpacity style={{ backgroundColor: "#e3e6e3", padding: 10, borderRadius: 10, borderColor: 'black', borderWidth: 1 }} onPress={() => viewRequest(requestId, request, optionEnabled)}>
                         <Ionicons name="eye" size={24} color="black" />
                     </TouchableOpacity>
 
@@ -429,11 +429,12 @@ const ViewJob = () => {
                                     </TouchableOpacity>
                                 </View>
                             </View>
-                            <TouchableOpacity style={{ height: 50, backgroundColor: "#9facf3", borderRadius: 10, justifyContent: "center", alignItems: "center", marginTop: 10, borderWidth: 1, borderColor: "blue", flexDirection: 'row', gap: 10 }} onPress={handleScanPress} >
-                                {/* <AntDesign name="qrcode" size={24} color="black" /> */}
-                                <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />
-                                <Text>Scan to complete job</Text>
-                            </TouchableOpacity></>
+                            {job?.status === "assigned" && (
+                                <TouchableOpacity style={{ height: 50, backgroundColor: "#9facf3", borderRadius: 10, justifyContent: "center", alignItems: "center", marginTop: 10, borderWidth: 1, borderColor: "blue", flexDirection: 'row', gap: 10 }} onPress={handleScanPress} >
+                                    {/* <AntDesign name="qrcode" size={24} color="black" /> */}
+                                    <MaterialCommunityIcons name="qrcode-scan" size={24} color="black" />
+                                    <Text>Scan to complete job</Text>
+                                </TouchableOpacity>)}</>
                     )
                     }
                     <View style={[styles.horizontalLine, { backgroundColor: 'grey', width: '100%', marginVertical: 10 }]} />
@@ -452,8 +453,8 @@ const ViewJob = () => {
                             console.log("Actual Response:", actualResponse);
                             return (
                                 actualResponse.type === "acceptance" ?
-                                    <JobAcceptanceRequest key={index} request={actualResponse} requestId={responseId} optionEnabled={job.status==="assigned" || job.status==="completed" ? false : true} /> :
-                                    actualResponse.type === "revised_proposal" ? <RevisedProposalRequest key={index} request={actualResponse} requestId={responseId} optionEnabled={job.status==="assigned" || job.status==="completed" ? false : true} /> : null
+                                    <JobAcceptanceRequest key={index} request={actualResponse} requestId={responseId} optionEnabled={job.status === "assigned" || job.status === "completed" ? false : true} /> :
+                                    actualResponse.type === "revised_proposal" ? <RevisedProposalRequest key={index} request={actualResponse} requestId={responseId} optionEnabled={job.status === "assigned" || job.status === "completed" ? false : true} /> : null
                             )
                         })
                         ) : <Text style={{ color: "black", fontSize: 16, textAlign: "center", marginTop: 20 }}>No responses yet</Text>

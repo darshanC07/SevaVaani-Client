@@ -14,8 +14,11 @@ import React, { useState, useRef, use } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 import config from "../../config.json";
+import { useTranslation } from "react-i18next";
 
 const OTPScreen = () => {
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language.toLocaleLowerCase();
   const {number,uid} = useLocalSearchParams();
   const [otp, setOtp] = useState("");
   const otpInputRef = useRef<TextInput>(null);

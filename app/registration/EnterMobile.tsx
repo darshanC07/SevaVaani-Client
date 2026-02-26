@@ -13,8 +13,11 @@ import {
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const EnterMobile = () => {
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language.toLocaleLowerCase();
   const { OTPRequester } = NativeModules;
   const router = useRouter();
   const { uid } = useLocalSearchParams();
@@ -29,7 +32,7 @@ const EnterMobile = () => {
       if(text === "success"){
         router.push({pathname:"/registration/OTPScreen/", params:{number:mobile,uid:uid}});
       } else{
-        alert("Failed to request OTP. Please try again.");
+        alert(t('registration.invalidMobile'));
       }
     }
   }
@@ -112,7 +115,7 @@ const EnterMobile = () => {
             handleContinue();
           }}
         >
-          <Text style={styles.continueText}>Continue</Text>
+          <Text style={styles.continueText}>{t('common.continue')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

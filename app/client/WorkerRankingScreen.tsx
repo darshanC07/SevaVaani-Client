@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserId } from '@/utils/AsyncStorageUtils';
+import { useTranslation } from 'react-i18next';
 
 type MapContainerProps = {
     NearByWorkersLocList?: Array<[string, { lat: number; long: number }]>;
@@ -142,6 +143,10 @@ const MapContainer = ({
 
 const WorkerRankingScreen = () => {
     const router = useRouter();
+
+    const { t, i18n } = useTranslation();
+    const currentLanguage = i18n.language.toLocaleLowerCase();
+
     const searchIcon = require("../../assets/Client_HomeScreen/Search.png");
     const [mode, setMode] = useState('list');
     let { height, width } = useWindowDimensions();

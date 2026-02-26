@@ -11,12 +11,12 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
 import { activityOnProposal, fetchWorkerDetails } from "@/services/GlobalAPIs";
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
-import { useTranslation } from "react-i18next";
 const JobRequest = () => {
   const router = useRouter();
   let { request, requestId, jobId, optionEnabled } = useLocalSearchParams();
@@ -93,6 +93,144 @@ const JobRequest = () => {
     startFunction();
   }, [jobId]);
 
+
+  const styles = StyleSheet.create({
+    headerBg: {
+      backgroundColor: "#4560F4",
+      height: 220,
+      width: "100%",
+      position: "absolute",
+    },
+    topBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginHorizontal: 20,
+      marginTop: 15,
+    },
+    topRightIcons: {
+      flexDirection: "row",
+      gap: 10,
+    },
+    iconBtn: {
+      backgroundColor: "white",
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      borderWidth: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "row",
+    },
+    container: {
+      backgroundColor: "white",
+      // flex: 1,
+      // marginTop: 20,
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+      paddingHorizontal: 20,
+      height: '80%',
+
+    },
+    pageTitle: {
+      fontSize: 20,
+      fontWeight: "600",
+      marginVertical: 15,
+    },
+    card: {
+      borderWidth: 1,
+      borderColor: "black",
+      borderRadius: 15,
+      padding: 15,
+      marginBottom: 20,
+    },
+    workerRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 15,
+    },
+    avatar: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: "#4560F4",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    avatarText: {
+      color: "white",
+      fontWeight: "bold",
+    },
+    workerName: {
+      fontSize: 18,
+      fontWeight: "600",
+    },
+    rating: {
+      fontSize: 14
+    },
+    exp: {
+      fontSize: 14,
+      color: "gray",
+    },
+    profession: {
+      fontSize: 16,
+      fontWeight: "500",
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      marginBottom: 8,
+    },
+    bullet: {
+      fontSize: 15,
+      marginBottom: 5,
+    },
+    chatBtn: {
+      backgroundColor: "#BFC9FF",
+      padding: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      alignItems: "center",
+      marginTop: 15,
+    },
+    chatText: {
+      fontSize: 16,
+      fontWeight: "500",
+    },
+    actionRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 15,
+    },
+    declineBtn: {
+      backgroundColor: "#9CCBD6",
+      width: "48%",
+      padding: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      alignItems: "center",
+    },
+    acceptBtn: {
+      backgroundColor: "#4560F4",
+      width: "48%",
+      padding: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      alignItems: "center",
+    },
+    actionText: {
+      fontSize: currentLanguage=="EN"?16 : 14,
+      fontWeight: "600",
+    },
+    horizontalLine: {
+      height: 1,
+      width: "90%",
+      backgroundColor: "white",
+      marginBottom: 10,
+      alignSelf: "center",
+    },
+  });
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", height, justifyContent: 'space-between' }}>
       <View style={styles.headerBg} />
@@ -101,7 +239,7 @@ const JobRequest = () => {
       <View style={styles.horizontalLine} />
       <View style={styles.container}>
         <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
-          <Text style={styles.pageTitle}>Job request from {worker.name}</Text>
+          <Text style={styles.pageTitle}>{t('jobRequest.title')} {worker.name}</Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -113,53 +251,65 @@ const JobRequest = () => {
               <View style={{ flex: 1 }}>
                 <Text style={styles.workerName}>{worker.name}</Text>
                 <Text style={styles.rating}><AntDesign name="star" size={12} color="gold" style={{ alignSelf: 'center' }} /> {worker.workerRating} ({worker.jobsDoneCount} Jobs Completed)</Text>
-                <Text style={styles.exp}>Experience - {worker.experience} Years</Text>
+                <Text style={styles.exp}>{t('jobRequest.experience')} - {worker.experience} {t('jobRequest.years')}</Text>
               </View>
 
               <Text style={styles.profession}>{worker.jobType}</Text>
             </View>
           </View>
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Pricing Details</Text>
-            <Text style={styles.bullet}>• Service Charge: ₹480</Text>
-            <Text style={styles.bullet}>• Inspection Fee: Included</Text>
+            <Text style={styles.sectionTitle}>{t('jobRequest.pricingDetails')}</Text>
+            <Text style={styles.bullet}>• {t('jobRequest.serviceCharge')}: ₹480</Text>
+            <Text style={styles.bullet}>• {t('jobRequest.inspectionFee')}: {t('jobRequest.included')}</Text>
+
             <Text style={styles.bullet}>
-              • Additional Parts: Charged only if required
+              • {t('jobRequest.additionalParts')}
+
             </Text>
-            <Text style={styles.bullet}>• Taxes: Included</Text>
+            <Text style={styles.bullet}>• {t('jobRequest.taxesIncluded')}</Text>
+
 
             <Text style={[styles.sectionTitle, { marginTop: 15 }]}>
-              Scope of Work
+              {t('jobRequest.scopeOfWork')}
+
             </Text>
-            <Text style={styles.bullet}>• Inspection of bathroom tap</Text>
+            <Text style={styles.bullet}>• {t('jobRequest.scopeItem1')}</Text>
+
             <Text style={styles.bullet}>
-              • Fixing leakage or loose fitting
+              • {t('jobRequest.scopeItem2')}
+
             </Text>
             <Text style={styles.bullet}>
-              • Replacement of washer/seal if required
+              • {t('jobRequest.scopeItem3')}
+
             </Text>
             <Text style={styles.bullet}>
-              • Basic functionality testing after repair
+              • {t('jobRequest.scopeItem4')}
+
             </Text>
             <Text style={[styles.sectionTitle, { marginTop: 15 }]}>
-              Time & Availability
+              {t('jobRequest.timeAvailability')}
+
             </Text>
             <Text style={styles.bullet}>
-              • Estimated Duration: 30–40 minutes
+              • {t('jobRequest.estimatedDuration')}
+
             </Text>
             <Text style={styles.bullet}>
-              • Availability: Can start within 1 hour
+              • {t('jobRequest.availabilityNote')}
+
             </Text>
             <TouchableOpacity style={styles.chatBtn}>
-              <Text style={styles.chatText}>Chat with worker</Text>
+              <Text style={styles.chatText}>{t('jobRequest.startChat')}</Text>
             </TouchableOpacity>
             <View style={styles.actionRow}>
               <TouchableOpacity style={styles.declineBtn} onPress={handleRejectWorker}>
-                <Text style={styles.actionText}>Decline</Text>
+                <Text style={styles.actionText}>{t('jobRequest.rejectRequest')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.acceptBtn} onPress={handleConfirmWorker}>
                 <Text style={[styles.actionText, { color: "white" }]}>
-                  Accept
+                  {t('jobRequest.acceptRequest')}
+
                 </Text>
               </TouchableOpacity>
             </View>
@@ -176,140 +326,3 @@ const JobRequest = () => {
   );
 };
 export default JobRequest;
-
-const styles = StyleSheet.create({
-  headerBg: {
-    backgroundColor: "#4560F4",
-    height: 220,
-    width: "100%",
-    position: "absolute",
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginTop: 15,
-  },
-  topRightIcons: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  iconBtn: {
-    backgroundColor: "white",
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  container: {
-    backgroundColor: "white",
-    // flex: 1,
-    // marginTop: 20,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingHorizontal: 20,
-    height: '80%',
-
-  },
-  pageTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginVertical: 15,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: "black",
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 20,
-  },
-  workerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#4560F4",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  workerName: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  rating: {
-    fontSize: 14
-  },
-  exp: {
-    fontSize: 14,
-    color: "gray",
-  },
-  profession: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  bullet: {
-    fontSize: 15,
-    marginBottom: 5,
-  },
-  chatBtn: {
-    backgroundColor: "#BFC9FF",
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    marginTop: 15,
-  },
-  chatText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 15,
-  },
-  declineBtn: {
-    backgroundColor: "#9CCBD6",
-    width: "48%",
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  acceptBtn: {
-    backgroundColor: "#4560F4",
-    width: "48%",
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-  },
-  actionText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  horizontalLine: {
-    height: 1,
-    width: "90%",
-    backgroundColor: "white",
-    marginBottom: 10,
-    alignSelf: "center",
-  },
-});

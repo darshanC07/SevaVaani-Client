@@ -57,48 +57,50 @@ const ChatList = () => {
     },
   ];
 
-  useEffect(() => {
-    const fetchChatUsers = async () => {
-      const userId = await getUserId();
-      console.log("Fetched User ID:", userId);
-      if (!userId) {
-        router.replace("/login");
-        return;
-      }
-      try {
-        const response = await getChatList(userId,currentLanguage);
-        if (response) {
-          if (response.chats.length > 0) {
-            const filteredUsers = response.chats?.filter((item) =>
-              item.worker_name.toLowerCase().includes(search.toLowerCase())
-            );
-            setChatList(filteredUsers);
-          } else {
-            setChatList([]);
-          }
+
+  const fetchChatUsers = async () => {
+    const userId = await getUserId();
+    console.log("Fetched User ID:", userId);
+    if (!userId) {
+      router.replace("/login");
+      return;
+    }
+    try {
+      const response = await getChatList(userId, currentLanguage);
+      if (response) {
+        if (response.chats.length > 0) {
+          const filteredUsers = response.chats?.filter((item) =>
+            item.worker_name.toLowerCase().includes(search.toLowerCase())
+          );
+          setChatList(filteredUsers);
         } else {
-          console.error("Failed to fetch chat users:", response.message);
+          setChatList([]);
         }
-      } catch (error) {
-        console.error("Error fetching chat users:", error);
+      } else {
+        console.error("Failed to fetch chat users:", response.message);
       }
+    } catch (error) {
+      console.error("Error fetching chat users:", error);
     }
+  }
+
+  useEffect(() => {
     fetchChatUsers();
+  }, [currentLanguage])
 
-  }, []);
 
-   function formatTime(timestamp) {
-      const date = new Date(timestamp);
-  
-      let hours = date.getHours();
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-  
-      const ampm = hours >= 12 ? 'am' : 'pm';
-      hours = hours % 12 || 12; // Convert 24h → 12h format
-  
-      return `${hours}:${minutes} ${ampm}`;
-    }
-  
+  function formatTime(timestamp) {
+    const date = new Date(timestamp);
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    const ampm = hours >= 12 ? 'am' : 'pm';
+    hours = hours % 12 || 12; // Convert 24h → 12h format
+
+    return `${hours}:${minutes} ${ampm}`;
+  }
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#F4F6FA" }}>
@@ -110,7 +112,7 @@ const ChatList = () => {
 
         <View style={styles.header}>
           <View style={styles.horizontalLine} />
-          <Text style={styles.title}>Chat</Text>
+          <Text style={styles.title}>{t('client.messages')}</Text>
 
           <View style={styles.searchRow}>
             <View style={styles.searchBox}>

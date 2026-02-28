@@ -93,7 +93,7 @@ const CallRoomScreen = () => {
   const handleHangup = async () => {
     await leaveChannel();
     uploadAudioToServer()
-    // router.back();
+    router.replace("/call/HangUpCallScreen");
   };
 
   // COMBINED LOADING STATE

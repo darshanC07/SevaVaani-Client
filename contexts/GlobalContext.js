@@ -9,8 +9,8 @@ export const GlobalStatesContext = createContext({
   setIeModel: () => { },
   showTranscription: false,
   setShowTranscription: (val) => {},
-  transcriptionResult : "", 
-  setTranscriptionResult : (text)=>{},
+  transcriptionResult : [], 
+  setTranscriptionResult : ([])=>{},
   notifications : [], 
   setNotifications : ([])=>{}
 });

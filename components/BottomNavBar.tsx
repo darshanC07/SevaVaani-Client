@@ -145,12 +145,23 @@ const BottomNavBar = () => {
         >
           <View style={styles.header}>
             <Text style={styles.headerText}>Call Summary</Text>
-            <TouchableOpacity onPress={() => setToShowTranscriptionModal(false)}>
+            <TouchableOpacity 
+            onPress={() => setToShowTranscriptionModal(false)}>
               <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.modalViewCallSummary}>
-            <Text style={{ color: 'black', fontSize: 16 }}>{contextObj.transcriptionResult}</Text>
+            {contextObj.transcriptionResult && contextObj.transcriptionResult.length > 0 ? (
+              contextObj.transcriptionResult.map((item: any, index: number) => (
+                <View key={index} style={{ marginBottom: 10 }}>
+                  <Text style={{ color: 'black', fontSize: 16 }}>{item}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={{ color: 'black', fontSize: 16 }}>No transcription available.</Text>
+            )
+
+            }
           </View>
         </Pressable>
       </Modal>
@@ -169,9 +180,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Add a semi-transparent background
   },
   modalViewCallSummary: {
-    margin: 20,
+    // margin: 20,
     backgroundColor: 'white',
-    borderRadius: 10,
+    // borderRadius: 10,
     padding: 30,
     gap: 10,
     alignItems: 'center',
@@ -183,6 +194,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    width: "80%",
+    borderBottomRightRadius: 20,
+    borderBottomLeftRadius: 20,
   },
   headerText: {
     color: 'white',
@@ -190,12 +204,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    backgroundColor: '#222224',
-    padding: 10,
-    width: "100%",
+    backgroundColor: '#4560F4',
+    // backgroundColor: '#222224',
+    padding: 15,
+    width: "80%",
     alignItems: 'center',
     height: 60,
-    justifyContent: 'center'
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    borderTopRightRadius : 20,
+    borderTopLeftRadius : 20
   },
   closeButtonText: {
     color: 'white',

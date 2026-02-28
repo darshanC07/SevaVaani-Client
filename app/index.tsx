@@ -96,7 +96,13 @@ export default function Index() {
             contextObj.setTranscriptionResult("Sorry, we couldn't transcribe the call.");
             contextObj.setShowTranscription(true);
           }
-          contextObj.setTranscriptionResult(data.transcription);
+          let str = data.transcription;
+          str = str.replace(/\.\s*$/, "");
+          str = str.slice(1, -1);
+          let arr = str.split("', '");
+          arr[0] = arr[0].replace(/^'/, "");
+          arr[arr.length - 1] = arr[arr.length - 1].replace(/'$/, "");
+          contextObj.setTranscriptionResult(arr);
           contextObj.setShowTranscription(true);
 
         }

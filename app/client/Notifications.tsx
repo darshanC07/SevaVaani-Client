@@ -1,8 +1,9 @@
 import BottomNavBar from "@/components/BottomNavBar";
 import NavBar from "@/components/NavBar";
+import { GlobalStatesContext } from "@/contexts/GlobalContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { use, useContext } from "react";
 import {
   ScrollView,
   StatusBar,
@@ -18,6 +19,8 @@ const Notifications = () => {
   const router = useRouter();
   let { height } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
+
+  const contextObj = useContext(GlobalStatesContext);
 
   const notifications = [
     {
@@ -42,6 +45,8 @@ const Notifications = () => {
       unread: false,
     },
   ];
+
+
 
   return (
     <SafeAreaView
@@ -91,11 +96,11 @@ const Notifications = () => {
           />
           <Ionicons name="options-outline" size={18} color="gray" />
         </View>
-        <ScrollView
+        {/* <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
         >
-          {["All", "Unread", "Requests", "Offers", "Completed"].map(
+          {contextObj.notifications.map(
             (item, index) => (
               <View
                 key={index}
@@ -104,7 +109,7 @@ const Notifications = () => {
                   paddingVertical: 8,
                   borderRadius: 20,
                   backgroundColor:
-                    item === "All" ? "#EEF1FF" : "white",
+                    item.type === "new_message" ? "#EEF1FF" : "white",
                   borderWidth: 1,
                   borderColor: "#E2E6FF",
                   marginRight: 10,
@@ -114,16 +119,15 @@ const Notifications = () => {
                   style={{
                     fontSize: 13,
                     fontWeight: "500",
-                    color:
-                      item === "All" ? "#4560F4" : "#444",
+                    
                   }}
                 >
-                  {item}
+                  {item.type}
                 </Text>
               </View>
             )
           )}
-        </ScrollView>
+        </ScrollView> */}
       </View>
       <View
         style={{
@@ -174,70 +178,8 @@ const Notifications = () => {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
-          {notifications.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={{
-                backgroundColor: item.unread ? "#F5F7FF" : "white",
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 14,
-                shadowColor: "#000",
-                shadowOpacity: 0.08,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 4 },
-                elevation: 4,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 16,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {item.title}
-                  </Text>
-
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: "gray",
-                      marginVertical: 4,
-                    }}
-                  >
-                    {item.desc}
-                  </Text>
-
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: "gray",
-                    }}
-                  >
-                    {item.time}
-                  </Text>
-                </View>
-
-                {item.unread && (
-                  <View
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 5,
-                      backgroundColor: "#4560F4",
-                      marginLeft: 10,
-                    }}
-                  />
-                )}
-              </View>
-            </TouchableOpacity>
+          {contextObj.notifications.map((item,index) => (
+            <Text key={index}>{item.type}</Text>
           ))}
         </ScrollView>
       </View>

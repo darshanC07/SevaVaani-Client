@@ -327,3 +327,18 @@ export const getChatList = async (CLIENT_ID, lang) => {
     return null;
   }
 };
+
+export const uploadRecording = async (formData) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/transcribe`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("Audio uploaded successfully:", response.data);
+    return response.data;
+  } catch (err) {
+    console.error("Failed to upload audio:", err);
+    throw err;
+  }
+};

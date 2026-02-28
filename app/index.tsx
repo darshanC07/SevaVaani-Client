@@ -70,7 +70,7 @@ export default function Index() {
               CN: data.channelName,
               anotherUserId: data.user2,
               anotherUserName: data.user2_name,
-              channelToken : data.token
+              channelToken: data.token
             },
           });
         } else if (uid === data.user2) {
@@ -80,17 +80,53 @@ export default function Index() {
               CN: data.channelName,
               anotherUserId: data.user1,
               anotherUserName: data.user1_name,
-              channelToken : data.token
+              channelToken: data.token
             },
           });
         }
       });
 
+
+      es.addEventListener("transcription_result", (event: any) => {
+        const data = JSON.parse(event.data);
+        console.log("Received transcription result event:", data);
+        console.log("my user id:", uid);
+        if (uid === data.user1_id || uid === data.user2_id) {
+          if (data.transcription === "Transcription failed" || data.transcription === "No transcription available") {
+            contextObj.setTranscriptionResult("Sorry, we couldn't transcribe the call.");
+            contextObj.setShowTranscription(true);
+          }
+          contextObj.setTranscriptionResult(data.transcription);
+          contextObj.setShowTranscription(true);
+
+        }
+      });
+
+
       es.addEventListener("new_message", (event: any) => {
         const data = JSON.parse(event.data);
         console.log("Received new message event:", data.message);
         contextObj.setMessages((prevMessages) => [...prevMessages, data.message]);
+        if (data.message["to"] === uid) {
+          data["type"] = "new_message";
+          contextObj.setNotifications((prevNotifications) => [...prevNotifications, data]);
+        }
       });
+
+      es.addEventListener("new_acceptance", (event: any) => {
+        const data = JSON.parse(event.data);
+        console.log("Received new acceptance event:", data.message);
+        data.acceptance.type = "new_acceptance";
+        contextObj.setNotifications((prevNotifications) => [...prevNotifications, data.acceptance]);
+      });
+
+      es.addEventListener("new_proposal", (event: any) => {
+        const data = JSON.parse(event.data);
+        console.log("Received new proposal event:", data.message);
+        data.proposal.type = "new_proposal";
+        contextObj.setNotifications((prevNotifications) => [...prevNotifications, data.proposal]);
+      });
+
 
       es.addEventListener("connected", (event: any) => {
         const data = JSON.parse(event.data);

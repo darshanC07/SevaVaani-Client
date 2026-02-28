@@ -9,7 +9,7 @@ const HangUpCallScreen = () => {
       console.log("Navigating back to previous screen after hang up...");
       router.back();
       router.back();
-    }, 3000); 
+    }, 500); 
   }, []);
   return (
     <View>

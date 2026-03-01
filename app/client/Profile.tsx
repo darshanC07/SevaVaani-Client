@@ -3,7 +3,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   ScrollView,
@@ -17,10 +17,25 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavBar from "../../components/BottomNavBar";
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = () => {
   const router = useRouter();
   const { t } = useTranslation();
+  const [plan, setPlan] = useState<string | null>("Basic");
+  useEffect(() => {
+    const fetchPlan = async () => {
+      try {
+        const plan = await AsyncStorage.getItem("plan");
+        console.log("Plan from AsyncStorage:", plan);
+        setPlan(plan);
+      } catch (error) {
+        console.error("Error fetching plan from AsyncStorage:", error);
+      }
+    };
+    fetchPlan();
+  }, []);
+
 
   let { height, width } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
@@ -157,9 +172,9 @@ const Profile = () => {
               >
                 <Text
                   style={{ color: "black", fontSize: 14, fontWeight: "bold" }}
-                >
-                  {t('profile.standardMember')}
-
+                >{
+                  plan === "Premium" ? t('profile.premiumMember') : plan === "Standard" ? t('profile.standardMember') : t('profile.basicMember')
+                }
                 </Text>
               </View>
             </LinearGradient></TouchableOpacity>
@@ -235,7 +250,7 @@ const Profile = () => {
                 <Image source={require('../../assets/Profile/Gift.png')} style={{ width: 50, height: 50 }} />
               </View>
               <View style={{ backgroundColor: 'rgba(114, 16, 234, 0.7)', paddingVertical: 5, paddingHorizontal: 15, borderRadius: 5, borderWidth: 1, borderColor: 'black', alignSelf: 'flex-start', marginLeft: 10, marginTop: 10 }}>
-                                <Text style={{ fontWeight: '500', color: "white" }}>{t('profile.referEarn')}</Text>
+                <Text style={{ fontWeight: '500', color: "white" }}>{t('profile.referEarn')}</Text>
 
               </View>
             </View>

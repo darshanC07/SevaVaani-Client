@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
+// export const BASE_URL = "https://4z5zr34t-5000.inc1.devtunnels.ms";
 
 export const loginClient = async (email, password) => {
   try {
@@ -339,6 +340,49 @@ export const uploadRecording = async (formData) => {
     return response.data;
   } catch (err) {
     console.error("Failed to upload audio:", err);
+    throw err;
+  }
+};
+
+export const getPlan = async (CLIENT_ID) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/get_plan/client/${CLIENT_ID}`,
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch plan details:", err);
+    throw err;
+  }
+};
+
+export const getChattedUserCount = async (CLIENT_ID) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/get_chatted_users_count/client/${CLIENT_ID}`,
+    );
+    return response.data;
+  } catch (err) {
+    return 0;
+  }
+};
+
+export const upgradePlan = async (CLIENT_ID, plan) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/upgrade_plan`,
+      {
+        client_id: CLIENT_ID,
+        new_plan: plan,
+        role: "client",
+      },
+      {
+        "Content-Type": "application/json",
+      },
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to upgrade plan:", err);
     throw err;
   }
 };

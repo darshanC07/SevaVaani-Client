@@ -53,6 +53,8 @@ const PricingPlansScreen = () => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const [selectedPlan, setSelectedPlan] = useState<string | null>("Basic");
+
   const cardWidth = width * 0.88;
   const cardHeight = height * 0.54;
   const spacing = (width - cardWidth) / 2;
@@ -234,7 +236,9 @@ const PricingPlansScreen = () => {
         <TouchableOpacity 
           style={styles.primaryButton}
           activeOpacity={0.92}
-          onPress={() => router.push('/client/PlanSuccessScreen')}
+          onPress={() => router.push({pathname :'/client/PlanSuccessScreen',params : {
+            plan: PLANS[activeIndex].title
+          }})}
         >
           <LinearGradient
             colors={['#FAE68E', '#FACC15']}

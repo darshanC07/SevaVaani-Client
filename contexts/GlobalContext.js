@@ -8,11 +8,13 @@ export const GlobalStatesContext = createContext({
   isIemodelLoaded: false,
   setIeModel: () => { },
   showTranscription: false,
-  setShowTranscription: (val) => {},
-  transcriptionResult : [], 
-  setTranscriptionResult : ([])=>{},
-  notifications : [], 
-  setNotifications : ([])=>{}
+  setShowTranscription: (val) => { },
+  transcriptionResult: [],
+  setTranscriptionResult: ([]) => { },
+  notifications: [],
+  setNotifications: ([]) => { },
+  context : null,
+  setContext : (llamaContext)=>{}
 });
 
 export const GlobalStatesProvider = ({ children }) => {
@@ -21,9 +23,10 @@ export const GlobalStatesProvider = ({ children }) => {
   const [jobs, setJobs] = useState([])
   const [isIemodelLoaded, setIeModel] = useState(false)
   const [showTranscription, setShowTranscription] = useState(false);
-   const [transcriptionResult, setTranscriptionResult] = useState('');
+  const [transcriptionResult, setTranscriptionResult] = useState('');
+  const [context,setContext] = useState(null)
   return (
-    <GlobalStatesContext.Provider value={{ messages, setMessages, jobs, setJobs, isIemodelLoaded, setIeModel, showTranscription, setShowTranscription,transcriptionResult, setTranscriptionResult ,notifications, setNotifications}}>
+    <GlobalStatesContext.Provider value={{ messages, setMessages, jobs, setJobs, isIemodelLoaded, setIeModel, showTranscription, setShowTranscription, transcriptionResult, setTranscriptionResult, notifications, setNotifications,context,setContext }}>
       {children}
     </GlobalStatesContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,14 +8,36 @@ import {
   NativeModules,
   Alert
 } from 'react-native';
-import { initModel, predictIntent } from '../utils/ClassifierService';
-// import { initExtractorModel, predictAnswer,loadVocab } from '../utils/Extractor';
+import { predictIntent } from '../utils/ClassifierService';
 import {
   LoaderKitView
 } from 'react-native-loader-kit';
 import { useRouter } from 'expo-router';
-import scripts from '../scripts.json';
-import { predictAnswer } from '@/utils/Extractor';
+import { GlobalStatesContext } from '@/contexts/GlobalContext';
+import { getUserId } from '@/utils/AsyncStorageUtils';
+import { postJob } from '@/services/GlobalAPIs';
+
+type JobExtraction = {
+  category: string;
+  task: string;
+  location: string;
+  budget: string;
+  urgency: string;
+};
+
+type StructuredJobData = {
+  job_data: {
+    service_type: string | null;
+    job_details: string | null;
+    location: string | null;
+    budget_min: number | null;
+    budget_max: number | null;
+    description: string | null;
+    urgency: string | null;
+    user_id?: string | null;
+  };
+  source_text: string;
+};
 
 const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
@@ -24,11 +46,16 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   const [isListening, setIsListening] = useState(false);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const scrollviewref = useRef<ScrollView>(null)
+
+  const [user, setUser] = useState<string | null>(null);
   const [messages, setMessages] = useState<
     { id: number; text: string; sender: "ai" | "user" }[]
   >([]);
 
+  const [loading, setLoading] = useState(false);
   const isActiveRef = useRef(true);
+
+  const contextObj = useContext(GlobalStatesContext);
 
   const sleep = (ms: number) =>
     new Promise(resolve => setTimeout(resolve, ms));
@@ -39,6 +66,89 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
       { id: Date.now() + Math.random(), text, sender }
     ]);
   };
+
+  const parseExtractionJson = (rawText: string): JobExtraction | null => {
+    try {
+      const cleaned = rawText.replace(/```json|```/g, '').trim();
+
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      const jsonCandidate =
+        firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace
+          ? cleaned.slice(firstBrace, lastBrace + 1)
+          : cleaned;
+
+      const parsed = JSON.parse(jsonCandidate);
+
+      return {
+        category: String(parsed?.category ?? '').trim(),
+        task: String(parsed?.task ?? '').trim(),
+        location: String(parsed?.location ?? '').trim(),
+        budget: String(parsed?.budget ?? '').trim(),
+        urgency: String(parsed?.urgency ?? '').trim(),
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const fetchUser = async () => {
+    const uid = await getUserId();
+    setUser(uid);
+  }
+
+  const parseBudget = (budgetText: string) => {
+    const value = budgetText.trim();
+    if (!value) {
+      return { raw: null, amount: null, currency: null };
+    }
+
+    const amountMatch = value.match(/\d+(?:\.\d+)?/);
+    const amount = amountMatch ? Number(amountMatch[0]) : null;
+
+    let currency: string | null = null;
+    if (/₹|rs\.?|rupees?|inr/i.test(value)) {
+      currency = 'INR';
+    } else if (/\$/i.test(value)) {
+      currency = 'USD';
+    }
+
+    return {
+      raw: value,
+      amount,
+      currency,
+    };
+  };
+
+  const buildStructuredJobData = (
+    extracted: JobExtraction,
+    sourceText: string
+  ): StructuredJobData => {
+
+    const budgetParsed = parseBudget(extracted.budget);
+
+    return {
+      job_data: {
+        service_type: extracted.category || null,
+        job_details: extracted.task || null,
+        location: extracted.location || null,
+        budget_min: budgetParsed.amount,
+        budget_max: budgetParsed.amount,
+        description: extracted.task || null,
+        urgency: extracted.urgency || null,
+      },
+      source_text: sourceText,
+    };
+  };
+
+  const formatExtractionSummary = (result: StructuredJobData) => {
+    return `Here is your structured job_data JSON:\n${JSON.stringify(
+      result.job_data,
+      null,
+      2
+    )}`;
+  };
+
   const speakAndListen = async (question: string) => {
     try {
 
@@ -64,12 +174,55 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
+  const runExtraction = async (text: string): Promise<StructuredJobData | null> => {
+    console.log("Running extraction for:", text);
+    console.log("Current Llama Context:", contextObj.context);
+    const llamaContext = contextObj.context as any;
+    if (!llamaContext || typeof llamaContext.completion !== 'function') return null;
+    setLoading(true);
+
+    // const sentence = "i want plumbers to fix bathroom taps tomorrow immediately in around 500 rupees ....and yes i am living in mumbai";
+
+    console.log("--- STARTING EXTRACTION ---");
+
+    const response = await llamaContext.completion({
+      messages: [
+        {
+          role: 'system',
+          content: 'Return ONLY valid JSON, no markdown, no extra text. Use exactly this schema: {"category":"","task":"","location":"","budget":"","urgency":""}. Keep values short plain text. If missing, use empty string.'
+        },
+        { role: 'user', content: text }
+      ],
+      n_predict: 150,
+    });
+
+    const result = parseExtractionJson(response.text);
+    if (result) {
+      console.log("--- EXTRACTED POINTS ---");
+      console.log("Location:", result.location);
+      console.log("Category:", result.category);
+      console.log("Amount:", result.budget);
+      console.log("------------------------");
+      const structuredJobData = buildStructuredJobData(result, text);
+      console.log("Structured Job Data JSON:", JSON.stringify(structuredJobData, null, 2));
+      setLoading(false);
+      return structuredJobData;
+    } else {
+      console.log("Raw Response:", response.text);
+      setLoading(false);
+      return null;
+    }
+  };
+
   const handleConversation = async () => {
     try {
 
-      let text = await speakAndListen(
-        "Hello! How can I help you today?"
-      );
+      await TTS_module.getMsg("Hello! How can I help you today?");
+      await sleep(700);
+
+      setIsListening(true);
+      let text = await STT_module.getSTTResult();
+      setIsListening(false);
       if (!isActiveRef.current) return;
       if (!text) {
         text = await speakAndListen(
@@ -85,68 +238,66 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
       console.log(`Intent: ${intent} (${(confidence * 100).toFixed(1)}%)`);
 
-      if (intent === "job_post" && confidence > 0.5) {
+      if ((intent === "job_post" || intent === "post_a_job") && confidence > 0.5) {
 
+        addMessage("Sure! I can help you post a job.", "ai");
         await TTS_module.getMsg(
           "Sure! I can help you post a job."
         );
 
         await sleep(700);
 
-        let jobData: any = {};
+        let jobData: StructuredJobData | null = null;
 
-        for (let i = 0; i < scripts.job_post.length; i++) {
+        const detailsPrompt = "Please share your job details: what work is needed, location, budget, and urgency.";
+        addMessage(detailsPrompt, "ai");
+        let answer = await speakAndListen(detailsPrompt);
+
+        if (!isActiveRef.current) return;
+        if (!answer.trim()) {
+          addMessage("I didn't catch that. Please say that again.", "ai");
+          await TTS_module.getMsg(
+            "I didn't catch that. Please say that again."
+          );
+          await sleep(700);
+          answer = await speakAndListen(detailsPrompt);
           if (!isActiveRef.current) return;
-          const question = scripts.job_post[i];
-
-          // setResult(prev => prev + `\nAI: ${question}`);
-          addMessage(question, "ai");
-
-          let answer = await speakAndListen(question);
-          if (!isActiveRef.current) return;
-          if (!answer.trim()) {
-            await TTS_module.getMsg(
-              "I didn't catch that. Please say that again."
-            );
-            await sleep(700);
-            i--;
-            continue;
-          }
-
-          // setResult(prev => prev + `\nYou: ${answer}`);
-          addMessage(answer, "user");
-
-          switch (i) {
-            case 0:
-              const jobTitle = await predictAnswer("What is the job title?", answer);
-              jobData["job_details"] = jobTitle;
-              break;
-            case 1:
-              // const jobDescription = await predictAnswer("What is the job description?", answer);
-              jobData["description"] = answer;
-              break;
-            case 2:
-              const jobLocation = await predictAnswer("What is the job location?", answer);
-              jobData["location"] = jobLocation;
-              break;
-            case 3:
-              const jobBudget = await predictAnswer("What is the job budget?", answer);
-              jobData["budget_max"] = jobBudget;
-              break;
-            case 4:
-              const jobDuration = await predictAnswer("What is the job duration?", answer);
-              jobData["duration"] = jobDuration;
-              break;
-            default:
-              jobData["special_note"] = answer;
-          }
         }
 
-        await TTS_module.getMsg(
-          "Your job has been created successfully!"
-        );
+        addMessage(answer, "user");
 
+        jobData = await runExtraction(answer);
+
+        if (jobData) {
+          const summary = formatExtractionSummary(jobData);
+          addMessage(summary, "ai");
+
+        } else {
+          addMessage("I could not extract all details clearly. Please try again with category, task, location, budget, and urgency.", "ai");
+          await TTS_module.getMsg("I could not extract details clearly. Please repeat your job details.");
+        }
+
+        await sleep(700);
+
+        if (jobData) {
+          const uid = user ?? await getUserId();
+          if (!uid) {
+            addMessage("I couldn't find your user session. Please login again.", "ai");
+            await TTS_module.getMsg("I couldn't find your user session. Please login again.");
+            return;
+          }
+
+          jobData.job_data.user_id = uid;
+          const res = await postJob(jobData.job_data);
+          console.log("Job posted successfully:", res);
+          addMessage("Your job has been posted successfully!", "ai");
+          await TTS_module.getMsg("Your job has been posted successfully!");
+
+          
+
+        }
         console.log("Final Job Data:", jobData);
+
       }
       else if (confidence > 0.5) {
 
@@ -174,6 +325,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
       // await loadVocab();
       // await initExtractorModel();
       // await STT_module.initRecognizer(); 
+      await fetchUser();
       setIsConversationStarted(true);
       addMessage("Hello! How can I help you today?", "ai");
     };

@@ -20,7 +20,7 @@ import BottomNavBar from "../../components/BottomNavBar";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import SuccessModal from "@/components/SuccessModal";
 import ErrorModal from "@/components/ErrorModal";
-import { activityOnProposal, callUser, createRazorpayOrder, fetchJobDetails, fetchWorkerDetails, verifyRazorpayPayment } from "@/services/GlobalAPIs";
+import { activityOnProposal, callUser, createRazorpayOrder, fetchJobDetails, fetchWorkerDetails, getChattedUserCount, verifyRazorpayPayment } from "@/services/GlobalAPIs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUserId } from "@/utils/AsyncStorageUtils";
 import { useTranslation } from "react-i18next";
@@ -100,8 +100,22 @@ const ViewJob = () => {
     const [isSuccessModal, setSuccessModal] = useState(false);
     const [showErrorAlert, setShowErrorAlert] = useState(false);
 
+    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
     const [QRData, setQRData] = useState({});
 
+    const [chatListCount, setChatListCount] = useState(0);
+    const [plan, setPlan] = useState("Basic");
+    const getChatListCount = async () => {
+        try {
+            const count = await getChattedUserCount(user);
+            const storedPlan = await AsyncStorage.getItem("plan");
+            setPlan(storedPlan || "Basic");
+            setChatListCount(count);
+        } catch (error) {
+            console.error("Error fetching chat list count:", error);
+            setChatListCount(0);
+        }
+    }
     const handlePay = async (QRData) => {
         if (isPaying) return;
         try {
@@ -220,6 +234,7 @@ const ViewJob = () => {
 
     useEffect(() => {
         getJob();
+        getChatListCount();
     }, [])
 
     useEffect(() => {
@@ -416,15 +431,35 @@ const ViewJob = () => {
                                     </View>
                                 </View>
                                 <View style={styles.actionRow}>
-                                    <TouchableOpacity style={styles.callBtn} onPress={handleCall}>
+                                    <TouchableOpacity style={styles.callBtn} onPress={handleCall} >
                                         <Text style={styles.callText}>📞 Call Worker</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity style={styles.msgBtn} onPress={() => {
-                                        router.push({
-                                            pathname: '/client/ChatScreen',
-                                            params: { workerId: job?.acceptedWorker || "sgsdsdg", workerName: worker?.name }
-                                        });
-                                    }}>
+                                        if (plan == "Basic") {
+                                            if (chatListCount >= 3) {
+                                                router.push({
+                                                    pathname: '/client/ChatScreen',
+                                                    params: { workerId: job?.acceptedWorker || "sgsdsdg", workerName: worker?.name }
+                                                });
+                                            }
+                                            else{
+                                                setErrorMessage("You have reached the chat limit for your current plan. Please upgrade to continue chatting with more workers.");
+                                                setShowErrorAlert(true);
+                                            }
+                                        } else if (plan == "Standard") {
+                                            if (chatListCount >= 10) {
+                                                router.push({
+                                                    pathname: '/client/ChatScreen',
+                                                    params: { workerId: job?.acceptedWorker || "sgsdsdg", workerName: worker?.name }
+                                                });
+                                            }
+                                            else{
+                                                setErrorMessage("You have reached the chat limit for your current plan. Please upgrade to continue chatting with more workers.");
+                                                setShowErrorAlert(true);
+                                            }
+                                        }
+                                    }
+                                    }>
                                         <Text style={styles.msgText}>💬 Send Message</Text>
                                     </TouchableOpacity>
                                 </View>

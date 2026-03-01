@@ -11,14 +11,19 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import ConfettiCannon from 'react-native-confetti-cannon';
+import { upgradePlan } from '@/services/GlobalAPIs';
+import { getUserId } from '@/utils/AsyncStorageUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PlanSuccessScreen = () => {
   const router = useRouter();
   const { width } = useWindowDimensions();
   
+  const { plan } = useLocalSearchParams();
+
   // Animations
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -52,9 +57,38 @@ const PlanSuccessScreen = () => {
   const handleContinue = () => {
     // Navigate back to profile
     // router.replace('/client/Profile');
-    router.back();
-    router.back();
+    router.replace('/client');
   };
+
+  const handleUpgrade = async () => {
+    try {
+      const user = await getUserId();
+      if (user) {
+        const res = await upgradePlan(user,plan);
+        console.log("Upgrade plan response:", res);
+        if (res && res.code === 1) {
+          await AsyncStorage.setItem("plan", plan);
+          console.log("Plan upgraded successfully, stored in AsyncStorage:", plan);
+        }
+      } else {
+        router.replace('/login');
+      }
+    } catch (error) {
+      console.error("Error upgrading plan:", error);
+    }
+  }
+  useEffect(() => {
+    console.log("Received plan in PlanSuccessScreen:", plan);
+    try {
+      if (plan) {
+        handleUpgrade();
+      } else {
+        console.error("No plan received in PlanSuccessScreen");
+      }
+    } catch (error) {
+      console.error("Error in useEffect of PlanSuccessScreen:", error);
+    }
+  }, [plan]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -100,7 +134,7 @@ const PlanSuccessScreen = () => {
 
         {/* Success Message Text */}
         <Animated.View style={[styles.textSection, { opacity: contentOpacity }]}>
-          <Text style={styles.titleText}>You're Now a Premium Member!</Text>
+          <Text style={styles.titleText}>You're Now a {plan} Member!</Text>
           <Text style={styles.subtitleText}>
             Your journey just leveled up. Enjoy exclusive benefits and grow faster with SevaVaani.
           </Text>

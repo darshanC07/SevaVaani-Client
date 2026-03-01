@@ -10,16 +10,63 @@ import { Text } from "react-native";
 import { initExtractorModel, loadVocab } from "@/utils/Extractor";
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
 import { initModel } from "@/utils/ClassifierService";
+import { initLlama, LlamaContext } from 'llama.rn';
+import * as FileSystem from 'expo-file-system/legacy';
+import { Asset } from 'expo-asset';
+
+const prepareModel = async () => {
+  const modelUri = FileSystem.documentDirectory + 'Qwen2.5-0.5B-Instruct-IQ2_M.gguf';
+  const info = await FileSystem.getInfoAsync(modelUri);
+
+  if (!info.exists) {
+    console.log("Copying model using Expo FS...");
+    // This looks for the file in your project's assets (inside assets/images)
+    const asset = Asset.fromModule(require('../assets/Qwen2.5-0.5B-Instruct-IQ2_M.gguf'));
+    await asset.downloadAsync();
+    await FileSystem.copyAsync({
+      from: asset.localUri,
+      to: modelUri
+    });
+  }
+  return modelUri; // Pass this path to initLlama
+};
+
 
 export default function Index() {
   const router = useRouter();
   const [user, setUser] = useState<string | null>(null);
   const esRef = useRef<EventSource>(null);
   const contextObj = useContext(GlobalStatesContext);
+  const [context, setContext] = useState<LlamaContext | null>(null);
+  const [status, setStatus] = useState('Initializing...');
+  const prepareAndLoadModel = async () => {
+    try {
+      const DEST_PATH = await prepareModel();
+
+      // 2. Initialize the Llama engine with the local file path
+      setStatus('Loading AI Engine...');
+      const llamaContext = await initLlama({
+        model: DEST_PATH,
+        use_mlock: true, // Keep in RAM for speed
+        n_ctx: 1024,      // Context size
+      });
+
+      contextObj.setContext(llamaContext);
+      setStatus('AI Ready (Loaded from Assets)');
+      console.log('Model loaded and Llama context initialized successfully');
+    } catch (e) {
+      console.error(e);
+      setStatus('Error: ' + e.message);
+    }
+  };
+
+  
+
   async function loadIEModel() {
     await initModel();  //loading the intent classifier model
     await loadVocab();
-    await initExtractorModel();
+    // await initExtractorModel();
+    await prepareAndLoadModel();
     contextObj.setIeModel(true);
   }
 

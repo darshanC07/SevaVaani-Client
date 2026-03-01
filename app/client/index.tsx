@@ -18,7 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import NavBar from "../../components/NavBar";
 import { getUserId } from "../../utils/AsyncStorageUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchJobs } from "../../services/GlobalAPIs";
+import { fetchJobs, getPlan } from "../../services/GlobalAPIs";
 import { initExtractorModel, predictAnswer, loadVocab } from '../../utils/Extractor';
 import { GlobalStatesContext } from "@/contexts/GlobalContext";
 import { useTranslation } from "react-i18next";
@@ -79,9 +79,32 @@ const Index = () => {
     }
   }
 
+  const handlePlan = async () => {
+    try {
+      const plan = await AsyncStorage.getItem("plan");
+      // if (!plan && user) {
+        const res = await getPlan(user);
+        console.log("Fetched plan from API:", res);
+        if (res && res.plan) {
+          await AsyncStorage.setItem("plan", res.plan);
+          console.log("Plan stored in AsyncStorage:", res.plan);
+        } else {
+          console.error("Failed to fetch plan from API - invalid response:", res);
+          await AsyncStorage.setItem("plan", "Basic");
+        }
+      // }
+      // else{
+
+      // }
+    } catch (error) {
+      console.error("Error fetching plan from AsyncStorage:", error);
+    }
+  }
+
   useEffect(() => {
     if (user) {
       getJobData(user);
+      handlePlan();
     }
   }, [currentLanguage])
 

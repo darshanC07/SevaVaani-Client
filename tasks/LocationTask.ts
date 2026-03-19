@@ -12,6 +12,7 @@ TaskManager.defineTask(LOCATION_TASK, async ({ data, error }) => {
   const user = await getUserId();
 //   if (!user) return;
 
+  console.log("Received new location data:", data.locations);
   const { latitude, longitude } = data.locations[0].coords;
 
   await UpdateClientLoc(user, latitude, longitude);

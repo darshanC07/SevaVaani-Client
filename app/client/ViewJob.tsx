@@ -425,7 +425,7 @@ const ViewJob = () => {
                                     <View style={styles.ratingBox}>
                                         <View style={{ flexDirection: "row", alignItems: "center" }}>
                                             <Text style={styles.star}>★</Text>
-                                            <Text style={styles.rating}>{worker?.workerRating}</Text>
+                                            <Text style={styles.rating}> {typeof worker?.workerRating === 'number' ? worker?.workerRating.toFixed(3).substring(0, 3) : worker?.workerRating}</Text>
                                         </View>
                                         <Text style={{ fontSize: 12, color: "black" }}>{worker?.experience} yrs experience</Text>
                                     </View>

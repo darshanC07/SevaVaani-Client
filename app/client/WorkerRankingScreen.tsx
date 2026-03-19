@@ -51,7 +51,8 @@ const WorkerRankBar = ({ data, id, userId, userName }) => {
                 <Text style={{ fontSize: 14, color: 'grey' }}>{data[4] || "Worker"}</Text>
             </View>
             <View>
-                <Text style={{ fontSize: 16, fontWeight: '600' }}>Rating: {data[3]}</Text>
+                <Text style={{ fontSize: 16, fontWeight: '600' }}>Rating : 
+                 {typeof data[3] === 'number' ? data[3].toFixed(3).substring(0, 3) : data[3]}</Text>
             </View>
             <TouchableOpacity onPress={async () => {
                 // const userId = getUserId();

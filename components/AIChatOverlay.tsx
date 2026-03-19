@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   NativeModules,
-  Alert
+  Alert,
+  Pressable
 } from 'react-native';
 import { predictIntent } from '../utils/ClassifierService';
 import {
@@ -16,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { GlobalStatesContext } from '@/contexts/GlobalContext';
 import { getUserId } from '@/utils/AsyncStorageUtils';
 import { postJob } from '@/services/GlobalAPIs';
+import { Modal } from 'react-native';
 
 type JobExtraction = {
   category: string;
@@ -46,7 +48,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
   const [isListening, setIsListening] = useState(false);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const scrollviewref = useRef<ScrollView>(null)
-
+  const [processing, setProcessing] = useState(false);
   const [user, setUser] = useState<string | null>(null);
   const [messages, setMessages] = useState<
     { id: number; text: string; sender: "ai" | "user" }[]
@@ -266,6 +268,7 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
 
         addMessage(answer, "user");
 
+        setProcessing(true);
         jobData = await runExtraction(answer);
 
         if (jobData) {
@@ -293,11 +296,12 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
           addMessage("Your job has been posted successfully!", "ai");
           await TTS_module.getMsg("Your job has been posted successfully!");
 
-          
+          await sleep(700);
+          setProcessing(false);
 
         }
         console.log("Final Job Data:", jobData);
-
+        setProcessing(false);
       }
       else if (confidence > 0.5) {
 
@@ -368,6 +372,21 @@ const AIChatOverlay = ({ onClose }: { onClose: () => void }) => {
         </TouchableOpacity>
       </View>
 
+      <Modal
+        transparent={true}
+        visible={processing}
+        animationType="fade"
+        onRequestClose={() => { }}>
+        <Pressable style={styles.loadingModalOverlayCallSummary} onPress={() => { }}>
+          <LoaderKitView
+            style={{ width: 50, height: 50 }}
+            name={'BallPulse'}
+            animationSpeedMultiplier={1.0} // speed up/slow down animation, default: 1.0, larger is faster
+            color={'blue'} // Optional: color can be: 'red', 'green',... or '#ddd', '#ffffff',...
+          />
+        </Pressable>
+      </Modal>
+
       <View style={styles.overlayContainer}>
         <ScrollView
           style={styles.messagesContainer}
@@ -422,7 +441,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 10,
   },
-
+  loadingModalOverlayCallSummary: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Add a semi-transparent background
+  },
   userRow: {
     justifyContent: "flex-end",
   },

@@ -250,7 +250,7 @@ const JobRequest = () => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.workerName}>{worker.name}</Text>
-                <Text style={styles.rating}><AntDesign name="star" size={12} color="gold" style={{ alignSelf: 'center' }} /> {worker.workerRating} ({worker.jobsDoneCount} Jobs Completed)</Text>
+                <Text style={styles.rating}><AntDesign name="star" size={12} color="gold" style={{ alignSelf: 'center' }} /> {typeof worker.workerRating === 'number' ? worker.workerRating.toFixed(3).substring(0, 3) : worker.workerRating} ({worker.jobsDoneCount} Jobs Completed)</Text>
                 <Text style={styles.exp}>{t('jobRequest.experience')} - {worker.experience} {t('jobRequest.years')}</Text>
               </View>
 

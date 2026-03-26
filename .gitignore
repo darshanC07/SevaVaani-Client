@@ -40,3 +40,6 @@ app-example
 
 # generated native folders
 /ios
+
+#model file
+/assets/Qwen2.5-0.5B-Instruct-IQ2_M.gguf

@@ -1,6 +1,7 @@
 import axios from "axios";
 
-export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
+// export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms"; //my localhost server url
+export const BASE_URL = "https://sevavaani-backend.onrender.com"; //render server url
 // export const BASE_URL = "https://4z5zr34t-5000.inc1.devtunnels.ms";
 
 export const loginClient = async (email, password) => {

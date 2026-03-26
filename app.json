@@ -33,12 +33,11 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
-       "config": {
+      "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDvSScst0iYdH7cs25OPhg8ZLaesfedxY8"
         }
       }
-      
     },
     "web": {
       "output": "static"
@@ -52,6 +51,12 @@
     },
     "assetBundlePatterns": [
       "assets/**/*"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1585daff-9f29-4316-800c-e3bd1ee7760e"
+      }
+    }
   }
 }

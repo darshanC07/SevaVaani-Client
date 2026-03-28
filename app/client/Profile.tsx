@@ -23,12 +23,20 @@ const Profile = () => {
   const router = useRouter();
   const { t } = useTranslation();
   const [plan, setPlan] = useState<string | null>("Basic");
+  const [name, setName] = useState<string | null>("User");
+  const [email, setEmail] = useState<string | null>("abc@gmail.com");
   useEffect(() => {
     const fetchPlan = async () => {
       try {
         const plan = await AsyncStorage.getItem("plan");
+        const name = await AsyncStorage.getItem("name");
+        const email = await AsyncStorage.getItem("email");
+        console.log("Name from AsyncStorage:", name);
+        console.log("Email from AsyncStorage:", email);
         console.log("Plan from AsyncStorage:", plan);
         setPlan(plan);
+        if(name) setName(name);
+        if(email) setEmail(email);
       } catch (error) {
         console.error("Error fetching plan from AsyncStorage:", error);
       }
@@ -36,6 +44,10 @@ const Profile = () => {
     fetchPlan();
   }, []);
 
+  async function logout(){
+    await AsyncStorage.clear();
+    router.replace('/');
+  }
 
   let { height, width } = useWindowDimensions();
   height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
@@ -134,10 +146,10 @@ const Profile = () => {
         >
           <View style={{ width: "50%" }}>
             <Text style={{ fontSize: 19, fontWeight: "500" }}>
-              Lucas Bennet
+              {name}
             </Text>
             <Text style={{ fontSize: 15, color: "gray" }}>
-              lucas12@gmail.com
+              {email}
             </Text>
           </View>
           <TouchableOpacity
@@ -254,9 +266,9 @@ const Profile = () => {
 
               </View>
             </View>
-            <View style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 10, borderColor: 'black', borderWidth: 1, padding: 10, borderRadius: 10 }}>
+            <TouchableOpacity style={{ width: '100%', justifyContent: 'center', alignItems: 'center', marginTop: 10, borderColor: 'black', borderWidth: 1, padding: 10, borderRadius: 10 }} onPress={logout}> 
               <Text style={{ color: 'red', fontSize: 20, fontWeight: '500' }}>{t('profile.logout')}</Text>
-            </View>
+            </TouchableOpacity>
           </ScrollView>
         </View>
       </View>

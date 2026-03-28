@@ -214,6 +214,7 @@ export default function Index() {
       setUser(uid);
       if (uid === null) {
         router.replace("/login");
+        // router.replace("/registration/EmailScreen");
       } else {
         router.replace("/client");
       }

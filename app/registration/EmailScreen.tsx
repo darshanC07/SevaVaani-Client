@@ -1,5 +1,4 @@
 import {
-  Image,
   Platform,
   StatusBar,
   StyleSheet,
@@ -8,10 +7,11 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
-  Keyboard,
+  KeyboardAvoidingView,
+  ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import config from "../../config.json";
@@ -20,28 +20,31 @@ import { useTranslation } from "react-i18next";
 
 const EmailScreen = () => {
   const router = useRouter();
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language.toLocaleLowerCase();
-  let { height, width } = useWindowDimensions();
-  height = height - (StatusBar.currentHeight ? StatusBar.currentHeight : 24);
-  const [uid, setUid] = useState<string | null>(null);
+  const { t } = useTranslation();
+
+  let { height } = useWindowDimensions();
+  height = height - (StatusBar.currentHeight || 24);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    async function checkUserExists() {
-      const uid = await AsyncStorage.getItem("uid");
-      if (uid) {
-        // router.replace("/home");
-        // setUid(uid);
-        return;
-      }
-    }
 
-    checkUserExists();
+  useEffect(() => {
+    AsyncStorage.getItem("uid").then((uid) => {
+      if (uid) return;
+    });
   }, []);
 
-  async function createUser(email: string, password: string) {
+  const isValid = () => {
+    if (!email || !password || !name || !role) return false;
+    if (!email.includes("@")) return false;
+    if (password.length < 6) return false;
+    return true;
+  };
+
+  async function createUser() {
     try {
       setLoading(true);
 
@@ -51,8 +54,8 @@ const EmailScreen = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email,
-          password: password,
+          email,
+          password,
         }),
       });
 
@@ -69,7 +72,7 @@ const EmailScreen = () => {
         alert(data.error || "Failed to create user");
       }
     } catch (error) {
-      console.log("Error creating user:", error);
+      console.log(error);
       alert("Something went wrong");
     } finally {
       setLoading(false);
@@ -84,202 +87,144 @@ const EmailScreen = () => {
         </View>
       )}
 
-      <SafeAreaView
-        style={[
-          styles.safe,
-          {
-            height: height,
-            marginTop:
-              Platform.OS === "android" ? StatusBar.currentHeight || 24 : 0,
-          },
-        ]}
-      >
-        <View style={styles.progressContainer}>
-          <View style={[styles.line, { backgroundColor: "#4560F4" }]}>
-            <View style={[styles.circle, { backgroundColor: "#4560F4" }]}>
-              <Text style={styles.number}>1</Text>
-            </View>
-          </View>
-          <View style={[styles.line]}>
-            <View style={[styles.circle]}>
-              <Text style={styles.number}>2</Text>
-            </View>
-          </View>
-          <View style={[styles.line]}>
-            <View style={styles.circle}>
-              <Text style={styles.number}>3</Text>
-            </View>
-          </View>
-          <View style={[styles.line]}>
-            <View style={styles.circle}>
-              <Text style={styles.number}>4</Text>
-            </View>
-          </View>
-          <View style={[styles.line]}>
-            <View style={styles.circle}>
-              <Text style={styles.number}>5</Text>
-            </View>
-          </View>
-        </View>
-
-        <View
-          style={[styles.content, { height: height - 170, paddingTop: "25%" }]}
+      <SafeAreaView style={[styles.safe, { height }]}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
         >
-          <View style={styles.textContainer}>
-            <Text style={styles.heading}>Create User</Text>
-          </View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scroll}
+          >
+            <Text style={styles.heading}>Create Account</Text>
 
-          <View style={styles.detailContainer}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLable}>Email</Text>
-              <TextInput
-                style={styles.inputArea}
+            <View style={styles.card}>
+              <Input label="Full Name" value={name} onChange={setName} />
+
+              <Input
+                label="Email"
                 value={email}
-                onChangeText={(e) => setEmail(e)}
-              ></TextInput>
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.inputLable, { width: 90 }]}>Password</Text>
-              <TextInput
-                style={[styles.inputArea, { paddingRight: 50 }]}
-                value={password}
-                onChangeText={(e) => setPassword(e)}
-                secureTextEntry={true}
-              ></TextInput>
-            </View>
-            <TouchableOpacity
-              style={[
-                styles.continueButton,
-                { marginTop: 30, opacity: loading ? 0.7 : 1 },
-              ]}
-              activeOpacity={0.9}
-              disabled={loading}
-              onPress={() => {
-                if (email && password) createUser(email, password);
-                else alert(t('registration.enterEmailAndPassword'));
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.continueText}>Continue</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
+                onChange={setEmail}
+                keyboardType="email-address"
+              />
 
-        <View style={[styles.footer, { display: "none" }]}>
-          <TouchableOpacity style={styles.continueButton} activeOpacity={0.9}>
-            <Text style={styles.continueText}>{t('common.continue')}</Text>
-          </TouchableOpacity>
-        </View>
+              <Input
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                secureTextEntry
+              />
+
+              <Input
+                label="Work Role"
+                value={role}
+                onChange={setRole}
+                placeholder="Plumber, Electrician..."
+              />
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  { opacity: isValid() && !loading ? 1 : 0.5 },
+                ]}
+                disabled={!isValid() || loading}
+                onPress={createUser}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Continue</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </>
   );
 };
 
-export default EmailScreen;
+
+const Input = ({
+  label,
+  value,
+  onChange,
+  secureTextEntry,
+  keyboardType,
+  placeholder,
+}: any) => (
+  <View style={styles.inputWrapper}>
+    <Text style={styles.label}>{label}</Text>
+    <TextInput
+      style={styles.input}
+      value={value}
+      onChangeText={onChange}
+      secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType}
+      placeholder={placeholder}
+      placeholderTextColor="#999"
+    />
+  </View>
+);
+
 
 const styles = StyleSheet.create({
   safe: {
-    padding: 20,
-    backgroundColor: "white",
+    flex: 1,
+    backgroundColor: "#F8FAFF",
+    paddingHorizontal: 20,
   },
-  progressContainer: {
-    flexDirection: "row",
-    marginBottom: 18,
-  },
-  line: {
-    backgroundColor: "#D9D9D9",
-    width: "20%",
-    alignItems: "center",
-    height: 5,
+  scroll: {
+    flexGrow: 1,
     justifyContent: "center",
-  },
-  circle: {
-    backgroundColor: "#D9D9D9",
-    borderRadius: 9,
-    height: 18,
-    width: 18,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  number: {
-    fontSize: 10,
-    color: "white",
-  },
-  content: {
-    // flex: 1,
-    justifyContent: "flex-start",
-  },
-  textContainer: {
-    alignItems: "center",
-    marginBottom: 24,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "700",
     color: "#0B1B3A",
+    textAlign: "center",
+    marginBottom: 30,
   },
-  footer: {
-    // paddingTop: 10,
-    alignItems: "flex-end",
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    elevation: 3,
   },
-  continueButton: {
+  inputWrapper: {
+    marginBottom: 18,
+  },
+  label: {
+    fontSize: 14,
+    marginBottom: 6,
+    color: "#333",
+    fontWeight: "600",
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: "#FAFAFA",
+  },
+  button: {
+    marginTop: 20,
+    height: 48,
     backgroundColor: "#4560F4",
-    width: 170,
-    height: 44,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 10,
   },
-  continueText: {
-    color: "#FFFFFF",
+  buttonText: {
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
-  detailContainer: {
-    width: "100%",
-    height: "50%",
-    // backgroundColor: "pink",
-    alignSelf: "center",
-    flexDirection: "column",
-    // justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 20,
-    borderBlockColor: "black",
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  inputContainer: {
-    width: "93%",
-  },
-  inputLable: {
-    fontSize: 18,
-    color: "#0B1B3A",
-    position: "relative",
-    left: 30,
-    top: 20,
-    zIndex: 2,
-    backgroundColor: "white",
-    width: 50,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  inputArea: {
-    // backgroundColor: "yellow",
-    width: "100%",
-    height: 50,
-    marginTop: 8,
-    borderBlockColor: "black",
-    borderRadius: 10,
-    borderWidth: 1,
-    color: "black",
-    fontSize: 18,
-    paddingLeft: 10,
-  },
   loaderOverlay: {
     position: "absolute",
+    zIndex: 10,
     top: 0,
     left: 0,
     right: 0,
@@ -288,5 +233,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
 });
+
+export default EmailScreen;

@@ -48,15 +48,16 @@ Features :
 
 ### Work in progress
 For clarity, the below features are not functional and currently working on it.
-1. Requests Tab in bottom navbar
-2. Notifications
-3. Your Ratings in Profile
-4. Saved Address in Profile
-5. Settings in Profile
-6. About us in Profile
-7. Refer and Earn in Profile
-8. Top setting's icon in Profile
-9. Wallet, My booking, Help & Support in Profile
+1. Searchbars on all screens
+2. Requests Tab in bottom navbar
+3. Notifications
+4. Your Ratings in Profile
+5. Saved Address in Profile
+6. Settings in Profile
+7. About us in Profile
+8. Refer and Earn in Profile
+9. Top setting's icon in Profile
+10. Wallet, My booking, Help & Support in Profile
 
 ## Feedback
 
